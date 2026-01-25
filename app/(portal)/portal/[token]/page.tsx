@@ -26,9 +26,12 @@ interface PageProps {
 
 export default async function PortalDashboard({ params }: PageProps) {
     const { token } = await params
+    console.log("Portal Access Attempt - Token:", token)
+
     let customer = null
     try {
         customer = await getPortalCustomer(token)
+        console.log("Portal Customer Result:", customer ? "Found" : "Not Found")
     } catch (error) {
         console.error("Failed to fetch customer:", error)
     }
