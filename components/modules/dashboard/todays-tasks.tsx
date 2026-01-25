@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
-import { Calendar, CheckCircle2, Clock, MapPin, PenTool, Video } from "lucide-react"
+import { Calendar, Clock, MapPin, Video } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,6 @@ interface TaskData {
         customers?: { name: string } | null
         location?: string | null
     }[]
-    dailyLog: { content: string } | null
 }
 
 export function TodaysTasks() {
@@ -52,7 +51,6 @@ export function TodaysTasks() {
     }
 
     const hasShoots = data?.shoots && data.shoots.length > 0
-    const hasLog = !!data?.dailyLog
 
     return (
         <Card className="h-full flex flex-col">
@@ -102,41 +100,6 @@ export function TodaysTasks() {
                     ) : (
                         <div className="text-sm text-muted-foreground italic p-2 border border-dashed rounded-md text-center">
                             Bugün için planlanmış çekim yok.
-                        </div>
-                    )}
-                </div>
-
-                {/* 2. Günlük Bölümü */}
-                <div className="space-y-2 flex-1 flex flex-col">
-                    <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <PenTool className="h-4 w-4" /> Günlük
-                    </h4>
-                    {hasLog && data?.dailyLog ? (
-                        <div className="flex-1 bg-green-50 border border-green-100 rounded-lg p-3 dark:bg-green-900/10 dark:border-green-900/20">
-                            <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-2">
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span className="font-medium text-sm">Günlük Tamamlandı</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-3 italic">
-                                &quot;{data.dailyLog.content}&quot;
-                            </p>
-                            <div className="mt-2">
-                                <Link href="/daily">
-                                    <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                                        Tamamını Oku &rarr;
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center border border-dashed rounded-lg p-4 text-center bg-muted/20">
-                            <p className="text-sm text-muted-foreground mb-3">Bugün henüz günlük yazmadın.</p>
-                            <Link href="/daily">
-                                <Button size="sm" variant="outline" className="gap-2">
-                                    <PenTool className="h-4 w-4" />
-                                    Şimdi Yaz
-                                </Button>
-                            </Link>
                         </div>
                     )}
                 </div>

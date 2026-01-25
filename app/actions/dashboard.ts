@@ -13,7 +13,6 @@ export interface DashboardStats {
     approvedProposalsAmount: number
     totalExpenses: number
     netProfit: number
-    ceoScore: number
     upcomingShoots: {
         id: string
         title: string
@@ -22,8 +21,8 @@ export interface DashboardStats {
         customers: { name: string } | null
     }[]
     totalCustomers: number
-    lastDailyLogDate: string | null
-    streakDays: number
+    lastTaskDate: string | null
+    completedTasksToday: number
     // New Data Points for AI
     overdueTasks: { content: string; assigned_date: string }[]
     todaysTasks: { content: string }[]
@@ -36,7 +35,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const todayStr = format(today, 'yyyy-MM-dd')
 
     // 1. Tüm verileri paralel çek
-    const [proposalsResult, shootsResult, customersResult, lastLogResult, expensesResult, logsResult, tasksResult] = await Promise.all([
+    const [proposalsResult, shootsResult, customersResult, expensesResult, tasksResult, lastTaskResult, todayCompletedResult] = await Promise.all([
         // Teklifler (Detaylı)
         supabase.from('proposals').select('status, total_amount, updated_at, customers(name)'),
         // Yaklaşan Çekimler (7 Günlük)
@@ -53,31 +52,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             .order('shoot_date', { ascending: true }),
         // Müşteri Sayısı
         supabase.from('customers').select('*', { count: 'exact', head: true }),
-        // Son Günlük
-        supabase.from('daily_logs')
-            .select('log_date')
-            .order('log_date', { ascending: false })
-            .limit(1)
-            .single(),
         // Giderler
         supabase.from('expenses').select('amount'),
-        // Son 30 günün günlükleri (CEO Skoru için)
-        supabase.from('daily_logs')
-            .select('category')
-            .gte('log_date', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString()),
         // Görevler (Bugün ve Gecikenler)
         supabase.from('tasks')
-            .select('content, assigned_date, is_completed')
-            .or(`is_completed.eq.false`) // Tamamlanmamışları al, sonra JS ile filtrele
+            .select('content, assigned_date, is_completed, updated_at')
+            .or(`is_completed.eq.false`),
+        // Son güncellenen görev (aktivite takibi için)
+        supabase.from('tasks')
+            .select('updated_at')
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .single(),
+        // Bugün tamamlanan görevler
+        supabase.from('tasks')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_completed', true)
+            .gte('updated_at', new Date(today.setHours(0, 0, 0, 0)).toISOString())
     ])
 
     const proposals = proposalsResult.data
     const shoots = shootsResult.data
     const customerCount = customersResult.count
-    const lastLog = lastLogResult.data
     const expenses = expensesResult.data
-    const recentLogs = logsResult.data
     const tasks = tasksResult.data
+    const lastTask = lastTaskResult.data
+    const todayCompletedCount = todayCompletedResult.count || 0
 
     // --- Finans Hesaplamaları ---
     let pendingAmount = 0
@@ -114,13 +114,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     const netProfit = approvedAmount - totalExpenses
 
-    // --- CEO Skoru ---
-    let strategicCount = 0
-    let totalLogs = recentLogs?.length || 0
-    recentLogs?.forEach(log => {
-        if (log.category === 'Strategic') strategicCount++
-    })
-    const ceoScore = totalLogs > 0 ? Math.round((strategicCount / totalLogs) * 100) : 0
+    // CEO Skoru kaldırıldı - artık task completion rate ile değiştirildi
 
     // --- Görev Analizi ---
     const overdueTasks: { content: string; assigned_date: string }[] = []
@@ -151,11 +145,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         approvedProposalsAmount: approvedAmount,
         totalExpenses,
         netProfit,
-        ceoScore,
         upcomingShoots: typedShoots,
         totalCustomers: customerCount || 0,
-        lastDailyLogDate: lastLog?.log_date || null,
-        streakDays: 0,
+        lastTaskDate: lastTask?.updated_at || null,
+        completedTasksToday: todayCompletedCount,
         overdueTasks,
         todaysTasks,
         pendingProposalsDetails
@@ -187,8 +180,8 @@ export async function generateDashboardBriefing(stats: DashboardStats) {
            - Bu Ayki Net Kâr: ${stats.netProfit} TL
 
         4. KİŞİSEL PERFORMANS:
-           - CEO Strateji Skoru: %${stats.ceoScore}
-           - Son Günlük: ${stats.lastDailyLogDate ? format(new Date(stats.lastDailyLogDate), 'd MMMM', { locale: tr }) : "Uzun süredir yazılmadı!"}
+           - Bugün Tamamlanan Görevler: ${stats.completedTasksToday}
+           - Son Aktivite: ${stats.lastTaskDate ? format(new Date(stats.lastTaskDate), 'd MMMM HH:mm', { locale: tr }) : "Uzun süredir aktivite yok!"}
 
         KURALLAR:
         1. **Yönetici Gibi Konuş:** "Günaydın Semih" diye başla ama hemen sadede gel. Gereksiz nezaket sözcüklerini at.
@@ -217,30 +210,20 @@ export async function getTodaysTasks() {
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
 
-    const [shootsResult, dailyLogResult] = await Promise.all([
-        // 1. Bugünün Çekimleri
-        supabase.from('shoots')
-            .select(`
-                id, 
-                title, 
-                shoot_date, 
-                shoot_time,
-                location,
-                customers (name)
-            `)
-            .gte('shoot_date', today.toISOString())
-            .lt('shoot_date', tomorrow.toISOString())
-            .order('shoot_time', { ascending: true }),
-        // 2. Bugünün Günlüğü
-        supabase.from('daily_logs')
-            .select('*')
-            .gte('log_date', today.toISOString())
-            .lt('log_date', tomorrow.toISOString())
-            .single()
-    ])
+    const shootsResult = await supabase.from('shoots')
+        .select(`
+            id, 
+            title, 
+            shoot_date, 
+            shoot_time,
+            location,
+            customers (name)
+        `)
+        .gte('shoot_date', today.toISOString())
+        .lt('shoot_date', tomorrow.toISOString())
+        .order('shoot_time', { ascending: true })
 
     const shoots = shootsResult.data
-    const dailyLog = dailyLogResult.data
 
     const typedShoots = (shoots || []).map((s: any) => ({
         id: s.id,
@@ -252,7 +235,6 @@ export async function getTodaysTasks() {
     }))
 
     return {
-        shoots: typedShoots,
-        dailyLog: dailyLog || null
+        shoots: typedShoots
     }
 }

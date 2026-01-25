@@ -21,7 +21,6 @@ import { getDashboardStats } from "@/app/actions/dashboard"
 import { AiBriefing } from "@/components/modules/dashboard/ai-briefing"
 import { TodaysTasks } from "@/components/modules/dashboard/todays-tasks"
 import { FinanceSummary } from "@/components/modules/dashboard/finance-summary"
-import { CeoScore } from "@/components/modules/dashboard/ceo-score"
 
 export default async function DashboardPage() {
     const stats = await getDashboardStats()
@@ -43,9 +42,25 @@ export default async function DashboardPage() {
                     />
                 </div>
 
-                {/* Orta Kolon: CEO Skoru ve Müşteri */}
+                {/* Orta Kolon: Task Completion ve Müşteri */}
                 <div className="col-span-1 md:col-span-1 space-y-6">
-                    <CeoScore score={stats.ceoScore} />
+                    <Card className="shadow-sm hover:shadow-md transition-shadow">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Bugünkü Performans</CardTitle>
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.completedTasksToday} Görev</div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Bugün tamamlandı
+                            </p>
+                            {stats.lastTaskDate && (
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Son aktivite: {format(new Date(stats.lastTaskDate), "HH:mm")}
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     <Card className="shadow-sm hover:shadow-md transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
