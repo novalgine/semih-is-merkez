@@ -78,7 +78,7 @@ export function EditCustomerDialog({ customer }: { customer: Customer }) {
             const result = await updateCustomer(customer.id, values)
             if (result.success) {
                 setOpen(false)
-                router.refresh() // Force page reload to show updated data
+                window.location.reload() // Hard refresh to guarantee UI update
             } else {
                 console.error(result.error)
             }
