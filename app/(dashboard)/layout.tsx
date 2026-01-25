@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { Header } from "@/components/layout/header"
+import { InstallPrompt } from "@/components/pwa/install-prompt"
 
 export default function DashboardLayout({
     children,
@@ -103,6 +104,7 @@ export default function DashboardLayout({
                     {children}
                 </main>
             </div>
+            <InstallPrompt />
         </div>
     )
 }
