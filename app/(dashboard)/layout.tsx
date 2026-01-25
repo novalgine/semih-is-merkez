@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { Header } from "@/components/layout/header"
+import { BottomNav } from "@/components/layout/bottom-nav"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
 
 export default function DashboardLayout({
@@ -100,10 +101,11 @@ export default function DashboardLayout({
             </div>
             <div className="flex flex-col">
                 <Header />
-                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+                <main className="flex flex-1 flex-col gap-4 p-4 pb-20 md:pb-4 lg:gap-6 lg:p-6">
                     {children}
                 </main>
             </div>
+            <BottomNav />
             <InstallPrompt />
         </div>
     )

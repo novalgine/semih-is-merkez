@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { CustomerCard } from "./customer-card"
+import { CustomerListClient } from "./customer-list-client"
 
 export async function CustomerList() {
     const supabase = await createClient()
@@ -16,11 +16,5 @@ export async function CustomerList() {
         )
     }
 
-    return (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {customers.map((customer) => (
-                <CustomerCard key={customer.id} customer={customer} />
-            ))}
-        </div>
-    )
+    return <CustomerListClient customers={customers} />
 }

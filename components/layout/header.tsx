@@ -22,6 +22,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { globalSearch, SearchResult } from "@/app/actions/search"
 import { useDebounce } from "@/hooks/use-debounce"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Header() {
     const [query, setQuery] = useState("")
@@ -192,6 +193,7 @@ export function Header() {
                     </div>
                 )}
             </div>
+            <ThemeToggle />
             <Button variant="secondary" size="icon" className="rounded-full">
                 <CircleUser className="h-5 w-5" />
                 <span className="sr-only">Toggle user menu</span>

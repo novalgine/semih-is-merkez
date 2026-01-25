@@ -56,14 +56,14 @@ export default async function PortalDashboard({ params }: PageProps) {
             {/* Welcome Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                    <h1 className="text-3xl font-bold tracking-tight">
                         Hoş Geldiniz, {customer.name}
                     </h1>
                     <p className="text-muted-foreground mt-1">
                         {customer.company ? `${customer.company} - ` : ""}Proje Yönetim Paneli
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white px-4 py-2 rounded-full border shadow-sm">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-full border shadow-sm">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                     Sistem Aktif
                 </div>
@@ -95,7 +95,7 @@ export default async function PortalDashboard({ params }: PageProps) {
                             </div>
                         ) : (
                             <div>
-                                <div className="text-lg font-medium text-gray-900">Planlanmış çekim yok</div>
+                                <div className="text-lg font-medium">Planlanmış çekim yok</div>
                                 <p className="text-xs text-muted-foreground mt-1">
                                     Yeni bir proje için iletişime geçebilirsiniz.
                                 </p>

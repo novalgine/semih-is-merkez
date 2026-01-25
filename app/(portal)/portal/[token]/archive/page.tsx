@@ -64,7 +64,7 @@ export default async function PortalArchivePage({ params }: PageProps) {
                     deliverables.map((item) => (
                         <Card key={item.id} className="group hover:shadow-md transition-shadow">
                             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-2">
-                                <div className="bg-muted p-2 rounded-lg group-hover:bg-white transition-colors">
+                                <div className="bg-muted p-2 rounded-lg group-hover:bg-card transition-colors">
                                     {getIcon(item.type)}
                                 </div>
                                 <div className="flex-1 min-w-0">
