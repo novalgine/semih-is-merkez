@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Pencil } from "lucide-react"
 import { TagInput } from "@/components/ui/tag-input"
+import { useToast } from "@/hooks/use-toast"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -61,6 +62,7 @@ export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer,
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+    const { toast } = useToast()
 
     const form = useForm<z.infer<typeof customerSchema>>({
         resolver: zodResolver(customerSchema),
@@ -74,16 +76,31 @@ export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer,
         },
     })
 
+    useEffect(() => {
+        form.reset({
+            name: customer.name,
+            company: customer.company || "",
+            email: customer.email || "",
+            phone: customer.phone || "",
+            status: customer.status,
+            tags: customer.tags || [],
+        })
+    }, [customer, form])
+
     async function onSubmit(values: z.infer<typeof customerSchema>) {
         setLoading(true)
         try {
             const result = await updateCustomer(customer.id, values)
             if (result.success && result.data) {
                 setOpen(false)
-                router.refresh()
+                // router.refresh() - Removed to prevent race condition with local state
                 if (onUpdate) {
                     onUpdate(result.data)
                 }
+                toast({
+                    title: "Başarılı",
+                    description: "Müşteri bilgileri güncellendi.",
+                })
             } else {
                 console.error(result.error)
             }
