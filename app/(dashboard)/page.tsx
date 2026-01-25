@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge"
 import { getDashboardStats } from "@/app/actions/dashboard"
 import { AiBriefing } from "@/components/modules/dashboard/ai-briefing"
 import { TodaysTasks } from "@/components/modules/dashboard/todays-tasks"
-import { FinanceSummary } from "@/components/modules/dashboard/finance-summary"
 
 export default async function DashboardPage() {
     const stats = await getDashboardStats()
@@ -31,19 +30,10 @@ export default async function DashboardPage() {
             <AiBriefing stats={stats} />
 
             {/* 2. Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Sol Kolon: Finansal Özet */}
-                <div className="col-span-1 md:col-span-1">
-                    <FinanceSummary
-                        income={stats.approvedProposalsAmount}
-                        expenses={stats.totalExpenses}
-                        netProfit={stats.netProfit}
-                    />
-                </div>
-
-                {/* Orta Kolon: Task Completion ve Müşteri */}
-                <div className="col-span-1 md:col-span-1 space-y-6">
+                {/* Sol Kolon: Task Completion ve Müşteri */}
+                <div className="col-span-1 space-y-6">
                     <Card className="shadow-sm hover:shadow-md transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Bugünkü Performans</CardTitle>

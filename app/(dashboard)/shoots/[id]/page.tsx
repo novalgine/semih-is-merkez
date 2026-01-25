@@ -55,7 +55,7 @@ export default async function ShootDetailPage({ params }: { params: Promise<{ id
     const checklist = shoot.checklist ? JSON.parse(shoot.checklist as string) : null
 
     return (
-        <div className="max-w-2xl mx-auto pb-20">
+        <div className="pb-20">
             {/* Header / Nav */}
             <div className="flex items-center gap-2 mb-6 text-muted-foreground">
                 <Link href="/shoots">

@@ -159,9 +159,28 @@ export async function generateDashboardBriefing(stats: DashboardStats) {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
 
+        // Get current time for time-aware greeting
+        const now = new Date()
+        const hour = now.getHours()
+        const currentTime = format(now, 'HH:mm', { locale: tr })
+
+        // Determine greeting based on time
+        let greetingInstruction = ""
+        if (hour >= 5 && hour < 12) {
+            greetingInstruction = "\"Günaydın Semih\" diye başla"
+        } else if (hour >= 12 && hour < 18) {
+            greetingInstruction = "\"İyi günler Semih\" diye başla"
+        } else if (hour >= 18 && hour < 22) {
+            greetingInstruction = "\"İyi akşamlar Semih\" diye başla"
+        } else {
+            greetingInstruction = "\"İyi geceler Semih\" diye başla ve geç saatte çalıştığını nazikçe belirt"
+        }
+
         const prompt = `
         Sen Semih'in "Chief of Staff"ı (Yönetici Asistanı/Sağ Kolu) olarak görev yapıyorsun.
-        Görevin: Aşağıdaki istihbarat raporunu analiz etmek ve Semih'e güne başlarken okuyacağı TEK PARAGRAFLIK, STRATEJİK ve HAREKETE GEÇİRİCİ bir brifing vermek.
+        Görevin: Aşağıdaki istihbarat raporunu analiz etmek ve Semih'e okuyacağı TEK PARAGRAFLIK, STRATEJİK ve HAREKETE GEÇİRİCİ bir brifing vermek.
+
+        ŞU ANKİ ZAMAN: ${currentTime} (Saat: ${hour})
 
         İSTİHBARAT RAPORU:
         ------------------
@@ -184,7 +203,7 @@ export async function generateDashboardBriefing(stats: DashboardStats) {
            - Son Aktivite: ${stats.lastTaskDate ? format(new Date(stats.lastTaskDate), 'd MMMM HH:mm', { locale: tr }) : "Uzun süredir aktivite yok!"}
 
         KURALLAR:
-        1. **Yönetici Gibi Konuş:** "Günaydın Semih" diye başla ama hemen sadede gel. Gereksiz nezaket sözcüklerini at.
+        1. **Zamana Uygun Selamla:** ${greetingInstruction} ama hemen sadede gel. Gereksiz nezaket sözcüklerini at.
         2. **Nokta Atışı Yap:** Her veriyi sayma. Sadece EN ÖNEMLİ 2-3 konuyu birleştir.
            - Örn: "Yarınki çekim için bugün X görevini bitirmelisin."
            - Örn: "Finansal durum süper ama şu bekleyen teklifi kapatırsan rekor kırarız."

@@ -62,36 +62,38 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-[300px_1fr]">
-                {/* Sidebar Info */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>İletişim Bilgileri</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-4">
-                        <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{customer.email || "-"}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{customer.phone || "-"}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">Kayıt: {new Date(customer.created_at).toLocaleDateString('tr-TR')}</span>
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column: Contact Info + Portal Manager */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>İletişim Bilgileri</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-4">
+                            <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{customer.email || "-"}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{customer.phone || "-"}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">Kayıt: {new Date(customer.created_at).toLocaleDateString('tr-TR')}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                {/* Portal Manager */}
-                <PortalManager
-                    customerId={customer.id}
-                    currentToken={customer.portal_token}
-                    currentPin={customer.portal_pin}
-                />
+                    {/* Portal Manager */}
+                    <PortalManager
+                        customerId={customer.id}
+                        currentToken={customer.portal_token}
+                        currentPin={customer.portal_pin}
+                    />
+                </div>
 
-                {/* Main Content Tabs */}
+                {/* Right Column: Main Content Tabs */}
                 <Tabs defaultValue="timeline" className="w-full">
                     <TabsList>
                         <TabsTrigger value="timeline">Zaman Çizelgesi</TabsTrigger>
