@@ -64,43 +64,45 @@ export default async function ShootsPage() {
                         }
 
                         return (
-                            <Link href={`/shoots/${shoot.id}`} key={shoot.id}>
-                                <Card className="hover:bg-muted/50 transition-all cursor-pointer border-l-4 relative group" style={{ borderLeftColor: shoot.status === 'completed' ? '#22c55e' : '#3b82f6' }}>
+                            <div key={shoot.id} className="relative">
+                                <Card className="hover:bg-muted/50 transition-all border-l-4 relative group" style={{ borderLeftColor: shoot.status === 'completed' ? '#22c55e' : '#3b82f6' }}>
                                     <DeleteShootButton id={shoot.id} />
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-start">
-                                            <Badge variant="outline" className="mb-2">
-                                                {shoot.status === 'completed' ? 'Tamamlandı' :
-                                                    diffDays === 0 ? 'BUGÜN' :
-                                                        diffDays > 0 ? `${diffDays} Gün Kaldı` : 'Geçmiş'}
-                                            </Badge>
-                                        </div>
-                                        <CardTitle className="text-lg font-bold line-clamp-1">
-                                            {shoot.title}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-2 text-sm">
-                                        <div className="flex items-center text-muted-foreground">
-                                            <User className="mr-2 h-4 w-4" />
-                                            <span className="truncate">{shoot.customers?.name} {shoot.customers?.company ? `(${shoot.customers.company})` : ''}</span>
-                                        </div>
-                                        <div className="flex items-center text-muted-foreground">
-                                            <Calendar className="mr-2 h-4 w-4" />
-                                            <span>{shootDate.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                        </div>
-                                        <div className="flex items-center text-muted-foreground">
-                                            <Clock className="mr-2 h-4 w-4" />
-                                            <span>{shootDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
-                                        {shoot.location && (
-                                            <div className="flex items-center text-muted-foreground">
-                                                <MapPin className="mr-2 h-4 w-4" />
-                                                <span className="truncate">{shoot.location}</span>
+                                    <Link href={`/shoots/${shoot.id}`} className="block">
+                                        <CardHeader className="pb-2">
+                                            <div className="flex justify-between items-start">
+                                                <Badge variant="outline" className="mb-2">
+                                                    {shoot.status === 'completed' ? 'Tamamlandı' :
+                                                        diffDays === 0 ? 'BUGÜN' :
+                                                            diffDays > 0 ? `${diffDays} Gün Kaldı` : 'Geçmiş'}
+                                                </Badge>
                                             </div>
-                                        )}
-                                    </CardContent>
+                                            <CardTitle className="text-lg font-bold line-clamp-1">
+                                                {shoot.title}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2 text-sm">
+                                            <div className="flex items-center text-muted-foreground">
+                                                <User className="mr-2 h-4 w-4" />
+                                                <span className="truncate">{shoot.customers?.name} {shoot.customers?.company ? `(${shoot.customers.company})` : ''}</span>
+                                            </div>
+                                            <div className="flex items-center text-muted-foreground">
+                                                <Calendar className="mr-2 h-4 w-4" />
+                                                <span>{shootDate.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                            </div>
+                                            <div className="flex items-center text-muted-foreground">
+                                                <Clock className="mr-2 h-4 w-4" />
+                                                <span>{shootDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            {shoot.location && (
+                                                <div className="flex items-center text-muted-foreground">
+                                                    <MapPin className="mr-2 h-4 w-4" />
+                                                    <span className="truncate">{shoot.location}</span>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Link>
                                 </Card>
-                            </Link>
+                            </div>
                         )
                     })
                 )}
