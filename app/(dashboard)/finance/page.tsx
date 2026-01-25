@@ -22,7 +22,7 @@ export default async function FinancePage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 {/* Net Profit */}
                 <Card className="border-l-4 border-l-green-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -50,7 +50,23 @@ export default async function FinancePage() {
                             {stats.approvedProposalsAmount.toLocaleString('tr-TR')} ₺
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Onaylanmış teklifler
+                            Satış başarısı
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Collected Cash - NEW */}
+                <Card className="border-l-4 border-l-emerald-500">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Kasadaki Nakit</CardTitle>
+                        <Wallet className="h-4 w-4 text-emerald-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                            {stats.collectedCash.toLocaleString('tr-TR')} ₺
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Tahsil edilen
                         </p>
                     </CardContent>
                 </Card>
@@ -75,7 +91,7 @@ export default async function FinancePage() {
                 <Card className="border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Bekleyen Teklifler</CardTitle>
-                        <Wallet className="h-4 w-4 text-blue-500" />
+                        <TrendingDown className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">

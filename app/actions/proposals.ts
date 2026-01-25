@@ -198,3 +198,47 @@ export async function convertProposalToShoot(id: string) {
     revalidatePath('/shoots')
     return { success: true, id: shoot.id }
 }
+
+export async function markProposalAsPaid(proposalId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('proposals')
+        .update({
+            payment_status: 'Paid',
+            paid_at: new Date().toISOString()
+        })
+        .eq('id', proposalId)
+
+    if (error) {
+        console.error('Mark as Paid Error:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/proposals')
+    revalidatePath('/finance')
+    revalidatePath('/')
+    return { success: true }
+}
+
+export async function markProposalAsPending(proposalId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('proposals')
+        .update({
+            payment_status: 'Pending',
+            paid_at: null
+        })
+        .eq('id', proposalId)
+
+    if (error) {
+        console.error('Mark as Pending Error:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/proposals')
+    revalidatePath('/finance')
+    revalidatePath('/')
+    return { success: true }
+}

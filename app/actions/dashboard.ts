@@ -11,6 +11,7 @@ export interface DashboardStats {
     pendingProposalsAmount: number
     pendingProposalsCount: number
     approvedProposalsAmount: number
+    collectedCash: number // Actually paid proposals
     totalExpenses: number
     netProfit: number
     upcomingShoots: {
@@ -83,6 +84,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     let pendingAmount = 0
     let pendingCount = 0
     let approvedAmount = 0
+    let collectedCash = 0 // Paid proposals
     let totalExpenses = 0
     const pendingProposalsDetails: { customer: string; amount: number; daysPending: number }[] = []
 
@@ -105,6 +107,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         }
         if (p.status === 'Approved') {
             approvedAmount += p.total_amount || 0
+
+            // Check if payment is collected
+            if (p.payment_status === 'Paid') {
+                collectedCash += p.total_amount || 0
+            }
         }
     })
 
@@ -143,6 +150,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         pendingProposalsAmount: pendingAmount,
         pendingProposalsCount: pendingCount,
         approvedProposalsAmount: approvedAmount,
+        collectedCash,
         totalExpenses,
         netProfit,
         upcomingShoots: typedShoots,

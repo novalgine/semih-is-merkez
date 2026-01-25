@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { Badge } from "@/components/ui/badge"
 import { DeleteProposalButton } from "@/components/modules/proposals/delete-proposal-button"
+import { PaymentStatusBadge } from "@/components/modules/proposals/payment-status-badge"
 
 export default async function ProposalsPage() {
     const supabase = await createClient()
@@ -80,9 +81,16 @@ export default async function ProposalsPage() {
                                         <span>{new Date(proposal.created_at).toLocaleDateString('tr-TR')}</span>
                                         <span>Geçerlilik: {new Date(proposal.valid_until).toLocaleDateString('tr-TR')}</span>
                                     </div>
-                                    <Link href={`/proposals/${proposal.id}`}>
-                                        <Button variant="ghost" size="sm">Detay</Button>
-                                    </Link>
+                                    <div className="flex items-center gap-2">
+                                        <PaymentStatusBadge
+                                            proposalId={proposal.id}
+                                            paymentStatus={proposal.payment_status}
+                                            paidAt={proposal.paid_at}
+                                        />
+                                        <Link href={`/proposals/${proposal.id}`}>
+                                            <Button variant="ghost" size="sm">Detay</Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </CardContent>
                             <DeleteProposalButton id={proposal.id} title={proposal.project_title} />
