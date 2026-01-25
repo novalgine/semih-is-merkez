@@ -13,7 +13,8 @@ import {
     Search,
     CircleUser,
     Loader2,
-    Package
+    Package,
+    Wallet
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -75,9 +76,11 @@ export function Header() {
         setQuery("")
     }
 
+    const [sheetOpen, setSheetOpen] = useState(false)
+
     return (
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-            <Sheet>
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
                     <Button
                         variant="outline"
@@ -93,6 +96,7 @@ export function Header() {
                         <Link
                             href="#"
                             className="flex items-center gap-2 text-lg font-semibold"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <Video className="h-6 w-6" />
                             <span className="sr-only">SEMİH İŞ MERKEZİ</span>
@@ -100,6 +104,7 @@ export function Header() {
                         <Link
                             href="/"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <Home className="h-5 w-5" />
                             Dashboard
@@ -107,6 +112,7 @@ export function Header() {
                         <Link
                             href="/customers"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <Users className="h-5 w-5" />
                             Müşteriler
@@ -114,6 +120,7 @@ export function Header() {
                         <Link
                             href="/proposals"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <FileText className="h-5 w-5" />
                             Teklifler
@@ -121,6 +128,7 @@ export function Header() {
                         <Link
                             href="/shoots"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <Video className="h-5 w-5" />
                             Çekimler
@@ -128,6 +136,7 @@ export function Header() {
                         <Link
                             href="/daily"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <BookOpen className="h-5 w-5" />
                             Günlük
@@ -135,9 +144,18 @@ export function Header() {
                         <Link
                             href="/services"
                             className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
                         >
                             <Package className="h-5 w-5" />
                             Hizmetler
+                        </Link>
+                        <Link
+                            href="/finance"
+                            className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSheetOpen(false)}
+                        >
+                            <Wallet className="h-5 w-5" />
+                            Finans
                         </Link>
                     </nav>
                 </SheetContent>

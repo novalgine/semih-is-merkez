@@ -53,9 +53,11 @@ interface Customer {
     phone: string | null
     status: 'active' | 'lead' | 'passive'
     tags?: string[] | null
+    image_url: string | null
+    created_at: string
 }
 
-export function EditCustomerDialog({ customer }: { customer: Customer }) {
+export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer, onUpdate?: (updatedCustomer: Customer) => void }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
@@ -79,7 +81,9 @@ export function EditCustomerDialog({ customer }: { customer: Customer }) {
             if (result.success) {
                 setOpen(false)
                 router.refresh()
-                window.location.reload() // Hard refresh to guarantee UI update
+                if (onUpdate) {
+                    onUpdate({ ...customer, ...values })
+                }
             } else {
                 console.error(result.error)
             }

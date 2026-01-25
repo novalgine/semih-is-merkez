@@ -25,20 +25,31 @@ type CustomerListClientProps = {
 export function CustomerListClient({ customers }: CustomerListClientProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [localCustomers, setLocalCustomers] = useState(customers);
+
+    // Sync local state with props when server re-renders (e.g. after router.refresh())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useMemo(() => {
+        setLocalCustomers(customers);
+    }, [customers]);
+
+    const handleUpdate = (updatedCustomer: Customer) => {
+        setLocalCustomers(prev => prev.map(c => c.id === updatedCustomer.id ? updatedCustomer : c));
+    };
 
     // Filter customers based on search query
     const filteredCustomers = useMemo(() => {
-        if (!searchQuery.trim()) return customers;
+        if (!searchQuery.trim()) return localCustomers;
 
         const query = searchQuery.toLowerCase();
-        return customers.filter(
+        return localCustomers.filter(
             (customer) =>
                 customer.name?.toLowerCase().includes(query) ||
                 customer.email?.toLowerCase().includes(query) ||
                 customer.phone?.toLowerCase().includes(query) ||
                 customer.company?.toLowerCase().includes(query)
         );
-    }, [customers, searchQuery]);
+    }, [localCustomers, searchQuery]);
 
     return (
         <div className="space-y-4">
@@ -96,7 +107,7 @@ export function CustomerListClient({ customers }: CustomerListClientProps) {
             ) : viewMode === "grid" ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredCustomers.map((customer) => (
-                        <CustomerCard key={customer.id} customer={customer} />
+                        <CustomerCard key={customer.id} customer={customer} onUpdate={handleUpdate} />
                     ))}
                 </div>
             ) : (

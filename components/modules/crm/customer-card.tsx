@@ -25,9 +25,10 @@ interface Customer {
     phone: string | null
     status: 'active' | 'lead' | 'passive'
     image_url: string | null
+    created_at: string
 }
 
-export function CustomerCard({ customer }: { customer: Customer }) {
+export function CustomerCard({ customer, onUpdate }: { customer: Customer, onUpdate?: (updatedCustomer: Customer) => void }) {
     const { toast } = useToast()
 
     const handleDelete = async () => {
@@ -74,7 +75,7 @@ export function CustomerCard({ customer }: { customer: Customer }) {
                     <Button asChild variant="ghost" size="sm" className="h-8">
                         <Link href={`/customers/${customer.id}`}>Detay</Link>
                     </Button>
-                    <EditCustomerDialog customer={customer} />
+                    <EditCustomerDialog customer={customer} onUpdate={onUpdate} />
                 </div>
 
                 <AlertDialog>
