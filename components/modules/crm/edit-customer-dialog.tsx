@@ -78,11 +78,11 @@ export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer,
         setLoading(true)
         try {
             const result = await updateCustomer(customer.id, values)
-            if (result.success) {
+            if (result.success && result.data) {
                 setOpen(false)
                 router.refresh()
                 if (onUpdate) {
-                    onUpdate({ ...customer, ...values })
+                    onUpdate(result.data)
                 }
             } else {
                 console.error(result.error)

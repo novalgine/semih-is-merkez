@@ -41,7 +41,7 @@ export async function addCustomer(data: CustomerFormValues) {
 export async function updateCustomer(id: string, data: CustomerFormValues) {
     const supabase = await createClient()
 
-    const { error } = await supabase.from('customers').update({
+    const { data: updatedCustomer, error } = await supabase.from('customers').update({
         name: data.name,
         company: data.company,
         email: data.email || null,
@@ -49,7 +49,10 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
         status: data.status,
         tags: data.tags,
         portal_pin: data.portal_pin,
-    }).eq('id', id)
+    })
+        .eq('id', id)
+        .select()
+        .single()
 
     if (error) {
         console.error('Error updating customer:', error)
@@ -58,7 +61,7 @@ export async function updateCustomer(id: string, data: CustomerFormValues) {
 
     revalidatePath(`/customers/${id}`)
     revalidatePath('/customers')
-    return { success: true }
+    return { success: true, data: updatedCustomer }
 }
 
 export async function deleteCustomer(id: string) {

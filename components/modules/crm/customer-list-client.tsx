@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,8 +28,7 @@ export function CustomerListClient({ customers }: CustomerListClientProps) {
     const [localCustomers, setLocalCustomers] = useState(customers);
 
     // Sync local state with props when server re-renders (e.g. after router.refresh())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useMemo(() => {
+    useEffect(() => {
         setLocalCustomers(customers);
     }, [customers]);
 
