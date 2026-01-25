@@ -9,9 +9,13 @@ import { createClient } from "@supabase/supabase-js"
 
 // Helper function to create Supabase client on-demand (avoids build-time initialization)
 function getSupabaseAdmin() {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceRoleKey) {
+        throw new Error("SUPABASE_SERVICE_ROLE_KEY is not defined in environment variables. Portal access requires this key.")
+    }
     return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        serviceRoleKey
     )
 }
 
