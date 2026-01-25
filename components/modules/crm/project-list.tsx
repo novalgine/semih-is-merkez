@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Loader2, Video, Film, Edit } from "lucide-react"
+import { Plus, Loader2, Video, Film, Edit, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -32,22 +32,33 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { addProject } from "@/app/actions/projects"
+import { addProject, updateProject, deleteProject } from "@/app/actions/projects"
+import { useToast } from "@/hooks/use-toast"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 const projectSchema = z.object({
     customerId: z.string(),
     title: z.string().min(2, "Proje adı en az 2 karakter olmalı"),
-    status: z.enum(['proposal', 'planning', 'shooting', 'editing', 'completed']),
+    status: z.enum(['proposal', 'planning', 'shooting', 'editing', 'in-progress', 'completed']),
     budget: z.coerce.number().optional(),
     deadline: z.string().optional(),
 })
 
 interface Project {
     id: string
-    title: string
-    status: 'proposal' | 'planning' | 'shooting' | 'editing' | 'completed'
+    name: string
+    status: 'proposal' | 'planning' | 'shooting' | 'editing' | 'in-progress' | 'completed'
     budget: number | null
     deadline: string | null
 }
@@ -55,6 +66,9 @@ interface Project {
 export function ProjectList({ customerId, projects }: { customerId: string, projects: Project[] }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [editingProject, setEditingProject] = useState<Project | null>(null)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const { toast } = useToast()
 
     const form = useForm<z.infer<typeof projectSchema>>({
         resolver: zodResolver(projectSchema) as any,
@@ -70,9 +84,16 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
     async function onSubmit(values: z.infer<typeof projectSchema>) {
         setLoading(true)
         try {
-            const result = await addProject(values)
+            let result
+            if (editingProject) {
+                result = await updateProject(editingProject.id, values)
+            } else {
+                result = await addProject(values)
+            }
+
             if (result.success) {
                 setOpen(false)
+                setEditingProject(null)
                 form.reset({
                     customerId: customerId,
                     title: "",
@@ -80,13 +101,63 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
                     budget: 0,
                     deadline: "",
                 })
+                toast({
+                    title: editingProject ? "Güncellendi" : "Eklendi",
+                    description: editingProject ? "Proje başarıyla güncellendi." : "Proje başarıyla eklendi."
+                })
             } else {
-                console.error(result.error)
+                toast({
+                    title: "Hata",
+                    description: result.error || "Bir sorun oluştu.",
+                    variant: "destructive"
+                })
             }
         } catch (error) {
-            console.error(error)
+            toast({
+                title: "Hata",
+                description: "Bir sorun oluştu.",
+                variant: "destructive"
+            })
         } finally {
             setLoading(false)
+        }
+    }
+
+    function handleEdit(project: Project) {
+        setEditingProject(project)
+        form.reset({
+            customerId: customerId,
+            title: project.name,
+            status: project.status,
+            budget: project.budget || 0,
+            deadline: project.deadline || "",
+        })
+        setOpen(true)
+    }
+
+    async function handleDelete(id: string) {
+        try {
+            const result = await deleteProject(id, customerId)
+            if (result.success) {
+                toast({
+                    title: "Silindi",
+                    description: "Proje başarıyla silindi."
+                })
+            } else {
+                toast({
+                    title: "Hata",
+                    description: result.error || "Silinirken bir sorun oluştu.",
+                    variant: "destructive"
+                })
+            }
+        } catch (error) {
+            toast({
+                title: "Hata",
+                description: "Bir sorun oluştu.",
+                variant: "destructive"
+            })
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -96,6 +167,7 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
             case 'planning': return 'Planlama';
             case 'shooting': return 'Çekim';
             case 'editing': return 'Kurgu';
+            case 'in-progress': return 'Yürütülüyor';
             case 'completed': return 'Tamamlandı';
             default: return status;
         }
@@ -104,7 +176,19 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-end">
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(isOpen) => {
+                    setOpen(isOpen)
+                    if (!isOpen) {
+                        setEditingProject(null)
+                        form.reset({
+                            customerId: customerId,
+                            title: "",
+                            status: "proposal",
+                            budget: 0,
+                            deadline: "",
+                        })
+                    }
+                }}>
                     <DialogTrigger asChild>
                         <Button size="sm">
                             <Plus className="mr-2 h-4 w-4" /> Proje Ekle
@@ -112,9 +196,9 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Yeni Proje Ekle</DialogTitle>
+                            <DialogTitle>{editingProject ? 'Proje Düzenle' : 'Yeni Proje Ekle'}</DialogTitle>
                             <DialogDescription>
-                                Müşteri için yeni bir proje oluşturun.
+                                {editingProject ? 'Proje bilgilerini güncelleyin.' : 'Müşteri için yeni bir proje oluşturun.'}
                             </DialogDescription>
                         </DialogHeader>
                         <Form {...form}>
@@ -149,6 +233,7 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
                                                     <SelectItem value="planning">Planlama</SelectItem>
                                                     <SelectItem value="shooting">Çekim</SelectItem>
                                                     <SelectItem value="editing">Kurgu</SelectItem>
+                                                    <SelectItem value="in-progress">Yürütülüyor</SelectItem>
                                                     <SelectItem value="completed">Tamamlandı</SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -211,10 +296,28 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
                                 <div className="flex items-center gap-2">
                                     <Video className="h-4 w-4 text-muted-foreground" />
                                     <CardTitle className="text-base font-medium">
-                                        {project.title}
+                                        {project.name}
                                     </CardTitle>
                                 </div>
-                                <Badge variant="outline">{getStatusLabel(project.status)}</Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="outline">{getStatusLabel(project.status)}</Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => handleEdit(project)}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        onClick={() => setDeletingId(project.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </CardHeader>
                             <CardContent className="grid gap-2 text-sm text-muted-foreground">
                                 {project.budget && (
@@ -234,6 +337,27 @@ export function ProjectList({ customerId, projects }: { customerId: string, proj
                     ))
                 )}
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu işlem geri alınamaz. Bu proje kalıcı olarak silinecektir.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>İptal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deletingId && handleDelete(deletingId)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

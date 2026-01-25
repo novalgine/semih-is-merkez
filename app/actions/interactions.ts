@@ -30,6 +30,30 @@ export async function addInteraction(data: z.infer<typeof interactionSchema>) {
     return { success: true }
 }
 
+export async function updateInteraction(id: string, data: Partial<z.infer<typeof interactionSchema>>) {
+    const supabase = await createClient()
+
+    const updateData: any = {}
+    if (data.type) updateData.type = data.type
+    if (data.content) updateData.content = data.content
+    if (data.date) updateData.date = data.date
+
+    const { error } = await supabase
+        .from('interactions')
+        .update(updateData)
+        .eq('id', id)
+
+    if (error) {
+        console.error('Error updating interaction:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data.customerId) {
+        revalidatePath(`/customers/${data.customerId}`)
+    }
+    return { success: true }
+}
+
 export async function deleteInteraction(id: string, customerId: string) {
     const supabase = await createClient()
     const { error } = await supabase.from('interactions').delete().eq('id', id)

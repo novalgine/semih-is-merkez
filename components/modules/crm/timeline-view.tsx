@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Loader2, Calendar, Mail, Phone, FileText, Video } from "lucide-react"
+import { Plus, Loader2, Calendar, Mail, Phone, FileText, Video, Edit, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -35,7 +35,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { addInteraction } from "@/app/actions/interactions"
+import { addInteraction, updateInteraction, deleteInteraction } from "@/app/actions/interactions"
+import { useToast } from "@/hooks/use-toast"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -64,6 +75,9 @@ interface TimelineItem {
 export function TimelineView({ customerId, items }: { customerId: string, items: TimelineItem[] }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [editingInteraction, setEditingInteraction] = useState<TimelineItem | null>(null)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const { toast } = useToast()
 
     const form = useForm<z.infer<typeof interactionSchema>>({
         resolver: zodResolver(interactionSchema),
@@ -78,29 +92,96 @@ export function TimelineView({ customerId, items }: { customerId: string, items:
     async function onSubmit(values: z.infer<typeof interactionSchema>) {
         setLoading(true)
         try {
-            const result = await addInteraction(values)
+            let result
+            if (editingInteraction) {
+                result = await updateInteraction(editingInteraction.id, values)
+            } else {
+                result = await addInteraction(values)
+            }
+
             if (result.success) {
                 setOpen(false)
+                setEditingInteraction(null)
                 form.reset({
                     customerId: customerId,
                     type: "note",
                     content: "",
                     date: new Date().toISOString().split('T')[0],
                 })
+                toast({
+                    title: editingInteraction ? "Güncellendi" : "Eklendi",
+                    description: editingInteraction ? "Etkileşim başarıyla güncellendi." : "Etkileşim başarıyla eklendi."
+                })
             } else {
-                console.error(result.error)
+                toast({
+                    title: "Hata",
+                    description: result.error || "Bir sorun oluştu.",
+                    variant: "destructive"
+                })
             }
         } catch (error) {
-            console.error(error)
+            toast({
+                title: "Hata",
+                description: "Bir sorun oluştu.",
+                variant: "destructive"
+            })
         } finally {
             setLoading(false)
+        }
+    }
+
+    function handleEdit(item: TimelineItem) {
+        setEditingInteraction(item)
+        form.reset({
+            customerId: customerId,
+            type: item.type as any,
+            content: item.content || "",
+            date: new Date(item.date).toISOString().split('T')[0],
+        })
+        setOpen(true)
+    }
+
+    async function handleDelete(id: string) {
+        try {
+            const result = await deleteInteraction(id, customerId)
+            if (result.success) {
+                toast({
+                    title: "Silindi",
+                    description: "Etkileşim başarıyla silindi."
+                })
+            } else {
+                toast({
+                    title: "Hata",
+                    description: result.error || "Silinirken bir sorun oluştu.",
+                    variant: "destructive"
+                })
+            }
+        } catch (error) {
+            toast({
+                title: "Hata",
+                description: "Bir sorun oluştu.",
+                variant: "destructive"
+            })
+        } finally {
+            setDeletingId(null)
         }
     }
 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-end">
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(isOpen) => {
+                    setOpen(isOpen)
+                    if (!isOpen) {
+                        setEditingInteraction(null)
+                        form.reset({
+                            customerId: customerId,
+                            type: "note",
+                            content: "",
+                            date: new Date().toISOString().split('T')[0],
+                        })
+                    }
+                }}>
                     <DialogTrigger asChild>
                         <Button size="sm">
                             <Plus className="mr-2 h-4 w-4" /> Etkileşim Ekle
@@ -108,9 +189,9 @@ export function TimelineView({ customerId, items }: { customerId: string, items:
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Yeni Etkileşim Ekle</DialogTitle>
+                            <DialogTitle>{editingInteraction ? 'Etkileşim Düzenle' : 'Yeni Etkileşim Ekle'}</DialogTitle>
                             <DialogDescription>
-                                Müşteriyle olan görüşme, mail veya notunuzu kaydedin.
+                                {editingInteraction ? 'Etkileşim bilgilerini güncelleyin.' : 'Müşteriyle olan görüşme, mail veya notunuzu kaydedin.'}
                             </DialogDescription>
                         </DialogHeader>
                         <Form {...form}>
@@ -242,7 +323,27 @@ export function TimelineView({ customerId, items }: { customerId: string, items:
                                                 </div>
                                             )}
                                             {['interaction', 'note', 'meeting', 'email', 'call'].includes(item.type) && (
-                                                <p className="whitespace-pre-wrap">{item.content}</p>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="whitespace-pre-wrap flex-1">{item.content}</p>
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7"
+                                                            onClick={() => handleEdit(item)}
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-destructive hover:text-destructive"
+                                                            onClick={() => setDeletingId(item.id)}
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -252,6 +353,27 @@ export function TimelineView({ customerId, items }: { customerId: string, items:
                     )}
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu işlem geri alınamaz. Bu etkileşim kalıcı olarak silinecektir.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>İptal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deletingId && handleDelete(deletingId)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
