@@ -33,7 +33,12 @@ export async function getPortalCustomer(token: string) {
         .eq('portal_token', token)
         .single()
 
-    if (error || !data) {
+    if (error) {
+        console.error("Supabase Error in getPortalCustomer:", error)
+        return null
+    }
+    if (!data) {
+        console.error("No customer found with token:", token)
         return null
     }
 
