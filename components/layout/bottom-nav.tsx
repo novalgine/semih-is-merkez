@@ -26,11 +26,6 @@ const navItems = [
         label: "Finans",
         icon: Wallet,
     },
-    {
-        href: "/daily",
-        label: "Günlük",
-        icon: BookOpen,
-    },
 ];
 
 export function BottomNav() {

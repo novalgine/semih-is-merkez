@@ -3,6 +3,8 @@ import { CustomerList } from "@/components/modules/crm/customer-list"
 import { AddCustomerDialog } from "@/components/modules/crm/add-customer-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export const dynamic = 'force-dynamic'
+
 export default function CustomersPage() {
     return (
         <div className="flex flex-col gap-4">
