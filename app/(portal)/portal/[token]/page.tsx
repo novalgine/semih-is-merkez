@@ -29,15 +29,28 @@ export default async function PortalDashboard({ params }: PageProps) {
     console.log("Portal Access Attempt - Token:", token)
 
     let customer = null
+    let errorMessage = null
+
     try {
         customer = await getPortalCustomer(token)
         console.log("Portal Customer Result:", customer ? "Found" : "Not Found")
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to fetch customer:", error)
+        errorMessage = error.message || JSON.stringify(error)
     }
 
     if (!customer) {
-        return notFound()
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+                <h1 className="text-2xl font-bold text-red-500 mb-4">Erişim Hatası</h1>
+                <p className="text-muted-foreground mb-4">Müşteri bilgileri alınamadı.</p>
+                <div className="bg-muted p-4 rounded-lg text-left text-xs font-mono overflow-auto max-w-full">
+                    <p className="font-bold">Debug Info:</p>
+                    <p>Token: {token}</p>
+                    <p>Error: {errorMessage || "Unknown Error"}</p>
+                </div>
+            </div>
+        )
     }
 
     let shoots: any[] = []
