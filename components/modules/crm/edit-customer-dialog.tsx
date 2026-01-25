@@ -92,20 +92,35 @@ export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer,
         try {
             const result = await updateCustomer(customer.id, values)
             if (result.success && result.data) {
-                setOpen(false)
-                router.refresh()
+                // KRİTİK NOKTA: Önce sayfayı yenile, Next.js veriyi tazeleyene kadar bekle.
+                await router.refresh()
+
                 if (onUpdate) {
                     onUpdate(result.data)
                 }
+
                 toast({
                     title: "Başarılı",
                     description: "Müşteri bilgileri güncellendi.",
                 })
+
+                // Sayfa yenilendikten SONRA modalı kapat
+                setOpen(false)
             } else {
                 console.error(result.error)
+                toast({
+                    variant: "destructive",
+                    title: "Hata",
+                    description: result.error || "Bir sorun oluştu.",
+                })
             }
         } catch (error) {
             console.error(error)
+            toast({
+                variant: "destructive",
+                title: "Hata",
+                description: "Bir sorun oluştu.",
+            })
         } finally {
             setLoading(false)
         }
