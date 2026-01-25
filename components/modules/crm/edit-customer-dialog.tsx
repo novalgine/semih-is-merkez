@@ -93,7 +93,7 @@ export function EditCustomerDialog({ customer, onUpdate }: { customer: Customer,
             const result = await updateCustomer(customer.id, values)
             if (result.success && result.data) {
                 setOpen(false)
-                // router.refresh() - Removed to prevent race condition with local state
+                router.refresh()
                 if (onUpdate) {
                     onUpdate(result.data)
                 }
