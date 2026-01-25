@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -57,6 +58,7 @@ interface Customer {
 export function EditCustomerDialog({ customer }: { customer: Customer }) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const router = useRouter()
 
     const form = useForm<z.infer<typeof customerSchema>>({
         resolver: zodResolver(customerSchema),
@@ -76,6 +78,7 @@ export function EditCustomerDialog({ customer }: { customer: Customer }) {
             const result = await updateCustomer(customer.id, values)
             if (result.success) {
                 setOpen(false)
+                router.refresh() // Force page reload to show updated data
             } else {
                 console.error(result.error)
             }
