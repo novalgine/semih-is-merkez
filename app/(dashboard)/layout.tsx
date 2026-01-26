@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/layout/header"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
+import { SidebarLink } from "@/components/layout/sidebar-link"
 
 export default function DashboardLayout({
     children,
@@ -42,55 +43,27 @@ export default function DashboardLayout({
                     </div>
                     <div className="flex-1 overflow-auto py-4">
                         <nav className="grid items-start px-4 text-sm font-medium gap-1">
-                            <Link
-                                href="/"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            <SidebarLink href="/" label="Dashboard">
                                 <Home className="h-4 w-4" />
-                                Dashboard
-                            </Link>
-                            <Link
-                                href="/customers"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/customers" label="Müşteriler">
                                 <Users className="h-4 w-4" />
-                                Müşteriler
-                            </Link>
-                            <Link
-                                href="/proposals"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/proposals" label="Teklifler">
                                 <FileText className="h-4 w-4" />
-                                Teklifler
-                            </Link>
-                            <Link
-                                href="/shoots"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/shoots" label="Çekimler">
                                 <Video className="h-4 w-4" />
-                                Çekimler
-                            </Link>
-                            <Link
-                                href="/daily"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/daily" label="Günlük">
                                 <BookOpen className="h-4 w-4" />
-                                Günlük
-                            </Link>
-                            <Link
-                                href="/services"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/services" label="Hizmetler">
                                 <Package className="h-4 w-4" />
-                                Hizmetler
-                            </Link>
-                            <Link
-                                href="/finance"
-                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-all hover:bg-white/[0.05] hover:text-white"
-                            >
+                            </SidebarLink>
+                            <SidebarLink href="/finance" label="Finans">
                                 <Wallet className="h-4 w-4" />
-                                Finans
-                            </Link>
+                            </SidebarLink>
                         </nav>
                     </div>
                     <div className="mt-auto p-4 border-t border-white/[0.05]">
