@@ -10,7 +10,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-[0_0_10px_rgba(16,185,129,0.4)] [a&]:hover:bg-primary/90",
+          "border-transparent bg-primary text-primary-foreground shadow-[0_0_15px_rgba(245,158,11,0.4)] [a&]:hover:bg-primary/90",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive:
@@ -20,7 +20,7 @@ const badgeVariants = cva(
         success:
           "border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
         warning:
-          "border-amber-500/20 bg-amber-500/10 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]",
+          "border-amber-500/20 bg-amber-500/10 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]",
       },
     },
     defaultVariants: {
