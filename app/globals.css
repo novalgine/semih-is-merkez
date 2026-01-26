@@ -219,4 +219,22 @@
   .bloom-hover:hover {
     box-shadow: 0 0 50px -10px rgba(245, 158, 11, 0.15);
   }
+
+  .micro-lift {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition-duration: 300ms;
+  }
+
+  .micro-lift:hover {
+    transform: scale(1.01) translateY(-1px);
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] border border-white/[0.08] backdrop-blur-md;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }

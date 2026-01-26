@@ -20,7 +20,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     const [isMuted, setIsMuted] = useLocalStorage('fennix-sound-muted', false);
 
     const [play] = useSound(TEST_SOUND_URL, {
-        volume: 0.5, // Increased volume for testing
+        volume: 0.12, // Subtle whisper feedback
         soundEnabled: !isMuted,
         interrupt: true,
         onload: () => console.log("Sound loaded successfully!"),
