@@ -37,6 +37,16 @@ export function DashboardClient({ stats }: { stats: DashboardStats }) {
             initial="hidden"
             animate="visible"
         >
+            {/* DEBUG: Magnetic Test Button */}
+            <div className="col-span-1 md:col-span-2 flex justify-center">
+                <MagneticButton
+                    className="bg-red-600 hover:bg-red-700 text-white w-full py-8 text-xl font-bold"
+                    strength={0.5}
+                >
+                    🧲 MAGNETIC TEST BUTTON (WIGGLE ME)
+                </MagneticButton>
+            </div>
+
             {/* Sol Kolon: Task Completion ve Müşteri */}
             <div className="col-span-1 space-y-6">
                 <motion.div variants={staggerItem}>
