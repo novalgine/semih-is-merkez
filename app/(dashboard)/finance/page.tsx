@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
+import { InteractiveCard } from "@/components/ui/interactive-card";
 
 // Mock Data for Finance (Replace with real data later)
 const TRANSACTIONS = [
@@ -100,7 +101,7 @@ export default function FinancePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Income Card */}
                 <motion.div variants={staggerItem}>
-                    <div className="relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.08] p-6 micro-lift group">
+                    <InteractiveCard className="relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.08] p-6 micro-lift group">
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-50 group-hover:opacity-100 transition-opacity" />
                         <div className="flex justify-between items-start mb-4">
                             <div>
@@ -117,12 +118,12 @@ export default function FinancePage() {
                                 <div key={i} className="flex-1 bg-emerald-500 rounded-t-sm" style={{ height: `${h}%` }} />
                             ))}
                         </div>
-                    </div>
+                    </InteractiveCard>
                 </motion.div>
 
                 {/* Expense Card */}
                 <motion.div variants={staggerItem}>
-                    <div className="relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.08] p-6 micro-lift group">
+                    <InteractiveCard className="relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.08] p-6 micro-lift group">
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500/0 via-red-500/50 to-red-500/0 opacity-50 group-hover:opacity-100 transition-opacity" />
                         <div className="flex justify-between items-start mb-4">
                             <div>
@@ -139,7 +140,7 @@ export default function FinancePage() {
                                 <div key={i} className="flex-1 bg-red-500 rounded-t-sm" style={{ height: `${h}%` }} />
                             ))}
                         </div>
-                    </div>
+                    </InteractiveCard>
                 </motion.div>
             </div>
 

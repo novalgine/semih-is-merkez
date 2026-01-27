@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { deleteCustomer } from "@/app/actions/customers"
 import { useToast } from "@/hooks/use-toast"
+import { InteractiveCard } from "@/components/ui/interactive-card"
 
 interface Customer {
     id: string
@@ -41,7 +42,7 @@ export function CustomerCard({ customer, onUpdate }: { customer: Customer, onUpd
     }
 
     return (
-        <Card className="overflow-hidden transition-all hover:shadow-md group">
+        <InteractiveCard className="overflow-hidden transition-all hover:shadow-md group bg-card text-card-foreground rounded-xl border shadow-sm">
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg font-semibold">{customer.name}</CardTitle>
@@ -100,6 +101,6 @@ export function CustomerCard({ customer, onUpdate }: { customer: Customer, onUpd
                     </AlertDialogContent>
                 </AlertDialog>
             </CardFooter>
-        </Card>
+        </InteractiveCard>
     )
 }
