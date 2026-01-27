@@ -169,7 +169,7 @@ export default function FinancePage() {
                             {TRANSACTIONS.map((tx) => (
                                 <tr
                                     key={tx.id}
-                                    className="group transition-colors hover:bg-white/[0.02] relative"
+                                    className="group transition-all duration-200 hover:bg-white/[0.02] hover:scale-[1.002] relative cursor-default"
                                 >
                                     <td className="px-6 py-4 font-medium text-zinc-200 group-hover:text-white transition-colors relative">
                                         {/* Amber Indicator on Hover */}
