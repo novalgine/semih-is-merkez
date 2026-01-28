@@ -132,30 +132,32 @@ export default async function PortalDashboard({ params }: PageProps) {
                     </p>
                     <div className="mt-5">
                         <Link href={`/portal/${token}/archive`}>
-                            <Button variant="link" className="p-0 h-auto text-amber-500 font-bold uppercase text-xs tracking-widest hover:text-amber-400 transition-colors">
-                                Arşivi Görüntüle <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                            </Button>
+                            <div className="flex items-center gap-1 text-sm font-medium text-amber-500 hover:text-amber-400 transition-colors cursor-pointer group/link">
+                                Arşivi Görüntüle <ArrowRight className="h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
+                            </div>
                         </Link>
                     </div>
                 </InteractiveCard>
 
                 {/* Project Status Card */}
-                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <CheckCircle2 className="h-5 w-5 text-amber-500" />
+                <Link href={`/portal/${token}/archive`}>
+                    <InteractiveCard className="h-full bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group cursor-pointer">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <CheckCircle2 className="h-5 w-5 text-amber-500" />
+                            </div>
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Başarı Oranı</span>
                         </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Başarı Oranı</span>
-                    </div>
 
-                    <div className="text-3xl font-bold text-white tabular-nums">{completedShoots} Proje</div>
-                    <p className="text-sm text-zinc-400 mt-2 font-medium">
-                        Birlikte tamamladığımız işler.
-                    </p>
-                    <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500 rounded-full" style={{ width: '100%' }} />
-                    </div>
-                </InteractiveCard>
+                        <div className="text-3xl font-bold text-white tabular-nums">{completedShoots} Proje</div>
+                        <p className="text-sm text-zinc-400 mt-2 font-medium">
+                            Birlikte tamamladığımız işler.
+                        </p>
+                        <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full" style={{ width: '100%' }} />
+                        </div>
+                    </InteractiveCard>
+                </Link>
             </div>
 
             {/* Navigation Grid */}

@@ -40,7 +40,7 @@ export function BookingCard() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[900px] h-[700px] bg-zinc-950 border-zinc-800 p-0 overflow-hidden">
                 <Cal
-                    calLink="semih/30min"
+                    calLink="semihhasanoglu1/30min"
                     style={{ width: "100%", height: "100%", overflow: "scroll" }}
                     config={{ theme: "dark" }}
                 />
