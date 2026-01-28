@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { InteractiveCard } from "@/components/ui/interactive-card";
+import { toast } from "sonner";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import { cn } from "@/lib/utils";
 
@@ -71,9 +72,9 @@ export function FinanceClient({
                     <p className="text-muted-foreground mt-1">Nakit akışı ve karlılık analizi.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="h-9 gap-2 opacity-50" disabled>
+                    <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => toast.info("Dışa aktarma yakında...")}>
                         <Download className="h-4 w-4" />
-                        Rapor (Yakında)
+                        Dışa Aktar
                     </Button>
                     <Link href="/finance/new">
                         <MagneticButton className="bg-amber-600 hover:bg-amber-700 text-white h-9">
@@ -104,7 +105,7 @@ export function FinanceClient({
                             </div>
 
                             <div className="flex items-baseline gap-2">
-                                <span className="text-5xl md:text-6xl font-mono font-medium text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400 tracking-tighter tabular-nums">
+                                <span className="text-5xl md:text-6xl font-sans font-bold tracking-tight tabular-nums leading-relaxed text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400">
                                     {formatCurrency(netWealth)}
                                 </span>
                                 <span className="text-sm text-emerald-500 font-medium flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
@@ -114,7 +115,7 @@ export function FinanceClient({
                             </div>
 
                             <p className="text-sm text-zinc-500 max-w-md">
-                                Tüm ödenmiş teklifler ve giderlerin net toplamı.
+                                Toplam nakit akışı ve net kârlılık
                             </p>
                         </div>
 
@@ -135,17 +136,15 @@ export function FinanceClient({
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Aylık Gelir</p>
-                                <h3 className="text-2xl font-mono text-white mt-1 tabular-nums">{formatCurrency(monthlyIncome)}</h3>
+                                <h3 className="text-2xl font-sans font-bold tracking-tight tabular-nums leading-relaxed text-white mt-1">{formatCurrency(monthlyIncome)}</h3>
                             </div>
                             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                                 <ArrowUpRight className="h-4 w-4" />
                             </div>
                         </div>
-                        {/* Visual Sparkline Suggestion */}
-                        <div className="h-12 w-full flex items-end gap-1 opacity-30">
-                            {[40, 60, 45, 70, 50, 80, 65, 90].map((h, i) => (
-                                <div key={i} className="flex-1 bg-emerald-500 rounded-t-sm" style={{ height: `${h}%` }} />
-                            ))}
+                        {/* Slim Pill Bar */}
+                        <div className="h-3 w-full bg-emerald-500/20 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: '70%' }} />
                         </div>
                     </InteractiveCard>
                 </motion.div>
@@ -157,17 +156,15 @@ export function FinanceClient({
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Aylık Gider</p>
-                                <h3 className="text-2xl font-mono text-white mt-1 tabular-nums">{formatCurrency(monthlyExpense)}</h3>
+                                <h3 className="text-2xl font-sans font-bold tracking-tight tabular-nums leading-relaxed text-white mt-1">{formatCurrency(monthlyExpense)}</h3>
                             </div>
                             <div className="h-8 w-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
                                 <ArrowDownRight className="h-4 w-4" />
                             </div>
                         </div>
-                        {/* Visual Sparkline Suggestion */}
-                        <div className="h-12 w-full flex items-end gap-1 opacity-30">
-                            {[30, 45, 20, 60, 35, 50, 40, 25].map((h, i) => (
-                                <div key={i} className="flex-1 bg-red-500 rounded-t-sm" style={{ height: `${h}%` }} />
-                            ))}
+                        {/* Slim Pill Bar */}
+                        <div className="h-3 w-full bg-red-500/20 rounded-full overflow-hidden">
+                            <div className="h-full bg-red-500 rounded-full" style={{ width: '40%' }} />
                         </div>
                     </InteractiveCard>
                 </motion.div>

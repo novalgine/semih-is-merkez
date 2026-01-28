@@ -66,3 +66,31 @@ export async function deleteExpense(id: string) {
     revalidatePath('/')
     return { success: true }
 }
+
+export async function createExpense(data: {
+    amount: number;
+    category: string;
+    description: string | null;
+    date: string;
+}) {
+    const supabase = await createClient();
+
+    const { error } = await supabase
+        .from('expenses')
+        .insert({
+            amount: data.amount,
+            category: data.category,
+            description: data.description,
+            date: data.date,
+            created_at: new Date().toISOString(),
+        });
+
+    if (error) {
+        console.error("Error creating expense:", error);
+        throw new Error("Gider eklenemedi");
+    }
+
+    revalidatePath('/finance');
+    return { success: true };
+}
+
