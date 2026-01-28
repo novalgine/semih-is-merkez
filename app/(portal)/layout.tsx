@@ -12,20 +12,19 @@ export default function PortalLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex flex-col min-h-screen bg-background">
+        <div className="flex flex-col min-h-screen bg-zinc-950">
             {/* Minimal Header */}
-            <header className="bg-card border-b h-16 flex items-center justify-between px-6 sticky top-0 z-10 shadow-sm">
+            <header className="bg-zinc-900/50 border-b border-white/5 h-16 flex items-center justify-between px-6 sticky top-0 z-10 backdrop-blur-md">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-lg">
+                    <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-black font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                         F
                     </div>
-                    <span className="font-semibold text-lg tracking-tight">Fennix Media</span>
+                    <span className="font-bold text-lg tracking-tight text-white">Fennix Media</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-sm text-muted-foreground hidden sm:inline">
+                    <span className="text-xs font-bold text-amber-500/80 uppercase tracking-widest hidden sm:inline bg-amber-500/5 px-3 py-1 rounded-full border border-amber-500/10">
                         Müşteri Portalı
                     </span>
-                    <ThemeToggle />
                 </div>
             </header>
 
@@ -35,7 +34,7 @@ export default function PortalLayout({
             </main>
 
             {/* Minimal Footer */}
-            <footer className="py-6 text-center text-xs text-muted-foreground border-t bg-card">
+            <footer className="py-8 text-center text-[10px] text-zinc-600 border-t border-white/5 bg-zinc-950 uppercase tracking-[0.2em]">
                 &copy; {new Date().getFullYear()} Fennix Media. Tüm hakları saklıdır.
             </footer>
         </div>

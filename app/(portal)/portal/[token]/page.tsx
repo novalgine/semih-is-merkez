@@ -8,15 +8,16 @@ import {
     Wallet,
     ArrowRight,
     Clock,
-    CheckCircle2
+    CheckCircle2,
+    LayoutDashboard
 } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
 import { getPortalCustomer, getPortalShoots, getPortalDeliverables } from "@/app/actions/portal-public"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { InteractiveCard } from "@/components/ui/interactive-card"
+import { BookingCard } from "@/components/portal/booking-modal"
 
 interface PageProps {
     params: Promise<{
@@ -26,29 +27,22 @@ interface PageProps {
 
 export default async function PortalDashboard({ params }: PageProps) {
     const { token } = await params
-    console.log("Portal Access Attempt - Token:", token)
 
     let customer = null
-    let errorMessage = null
-
     try {
         customer = await getPortalCustomer(token)
-        console.log("Portal Customer Result:", customer ? "Found" : "Not Found")
-    } catch (error: any) {
+    } catch (error) {
         console.error("Failed to fetch customer:", error)
-        errorMessage = error.message || JSON.stringify(error)
     }
 
     if (!customer) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
                 <h1 className="text-2xl font-bold text-red-500 mb-4">Erişim Hatası</h1>
-                <p className="text-muted-foreground mb-4">Müşteri bilgileri alınamadı.</p>
-                <div className="bg-muted p-4 rounded-lg text-left text-xs font-mono overflow-auto max-w-full">
-                    <p className="font-bold">Debug Info:</p>
-                    <p>Token: {token}</p>
-                    <p>Error: {errorMessage || "Unknown Error"}</p>
-                </div>
+                <p className="text-muted-foreground mb-4">Müşteri bilgileri alınamadı veya token geçersiz.</p>
+                <Link href="/">
+                    <Button variant="outline">Ana Sayfaya Dön</Button>
+                </Link>
             </div>
         )
     }
@@ -68,19 +62,23 @@ export default async function PortalDashboard({ params }: PageProps) {
     const completedShoots = shoots.filter(s => s.status === 'completed').length
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10 pb-20">
             {/* Welcome Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
+                    <div className="flex items-center gap-2 text-amber-500 mb-2">
+                        <LayoutDashboard className="h-5 w-5" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Müşteri Paneli</span>
+                    </div>
+                    <h1 className="text-4xl font-bold tracking-tight text-white">
                         Hoş Geldiniz, {customer.name}
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        {customer.company ? `${customer.company} - ` : ""}Proje Yönetim Paneli
+                    <p className="text-zinc-500 mt-2 text-lg">
+                        {customer.company ? `${customer.company} - ` : ""}Proje süreçlerinizi buradan takip edebilirsiniz.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-full border shadow-sm">
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <div className="flex items-center gap-3 text-sm font-medium text-emerald-500 bg-emerald-500/5 px-5 py-2.5 rounded-full border border-emerald-500/10 shadow-sm self-start md:self-center">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     Sistem Aktif
                 </div>
             </div>
@@ -88,121 +86,118 @@ export default async function PortalDashboard({ params }: PageProps) {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Next Shoot Card */}
-                <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Sıradaki Çekim
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {nextShoot ? (
-                            <div>
-                                <div className="text-2xl font-bold">
-                                    {format(new Date(nextShoot.shoot_date), "d MMMM", { locale: tr })}
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-1 truncate">
-                                    {nextShoot.title}
-                                </p>
-                                <div className="flex items-center gap-1 text-xs text-blue-600 mt-2 font-medium">
-                                    <Clock className="h-3 w-3" />
-                                    {format(new Date(nextShoot.shoot_date), "HH:mm")} - {nextShoot.location || "Konum Belirsiz"}
-                                </div>
+                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Calendar className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Sıradaki Çekim</span>
+                    </div>
+
+                    {nextShoot ? (
+                        <div>
+                            <div className="text-3xl font-bold text-white tabular-nums">
+                                {format(new Date(nextShoot.shoot_date), "d MMMM", { locale: tr })}
                             </div>
-                        ) : (
-                            <div>
-                                <div className="text-lg font-medium">Planlanmış çekim yok</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Yeni bir proje için iletişime geçebilirsiniz.
-                                </p>
+                            <p className="text-sm text-zinc-400 mt-2 line-clamp-1 font-medium">
+                                {nextShoot.title}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-amber-500/80 mt-4 font-bold uppercase tracking-tighter">
+                                <Clock className="h-3.5 w-3.5" />
+                                {format(new Date(nextShoot.shoot_date), "HH:mm")} • {nextShoot.location || "Konum Belirsiz"}
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="text-xl font-bold text-zinc-400">Planlanmış çekim yok</div>
+                            <p className="text-sm text-zinc-500 mt-2">
+                                Yeni bir proje için toplantı planlayabilirsiniz.
+                            </p>
+                        </div>
+                    )}
+                </InteractiveCard>
 
                 {/* Deliverables Card */}
-                <Card className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <FileVideo className="h-4 w-4" />
-                            Teslim Edilenler
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{deliverables.length} Dosya</div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Arşivinizde erişilebilir durumda.
-                        </p>
-                        <div className="mt-3">
-                            <Link href={`/portal/${token}/archive`}>
-                                <Button variant="link" className="p-0 h-auto text-purple-600 font-semibold">
-                                    Arşive Git <ArrowRight className="ml-1 h-3 w-3" />
-                                </Button>
-                            </Link>
+                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <FileVideo className="h-5 w-5 text-amber-500" />
                         </div>
-                    </CardContent>
-                </Card>
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Medya Arşivi</span>
+                    </div>
+
+                    <div className="text-3xl font-bold text-white tabular-nums">{deliverables.length} Dosya</div>
+                    <p className="text-sm text-zinc-400 mt-2 font-medium">
+                        Tüm teslim edilen içerikleriniz güvende.
+                    </p>
+                    <div className="mt-5">
+                        <Link href={`/portal/${token}/archive`}>
+                            <Button variant="link" className="p-0 h-auto text-amber-500 font-bold uppercase text-xs tracking-widest hover:text-amber-400 transition-colors">
+                                Arşivi Görüntüle <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                            </Button>
+                        </Link>
+                    </div>
+                </InteractiveCard>
 
                 {/* Project Status Card */}
-                <Card className="border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4" />
-                            Tamamlanan Projeler
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{completedShoots} Proje</div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Başarıyla tamamlandı.
-                        </p>
-                    </CardContent>
-                </Card>
+                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <CheckCircle2 className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Başarı Oranı</span>
+                    </div>
+
+                    <div className="text-3xl font-bold text-white tabular-nums">{completedShoots} Proje</div>
+                    <p className="text-sm text-zinc-400 mt-2 font-medium">
+                        Birlikte tamamladığımız işler.
+                    </p>
+                    <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: '100%' }} />
+                    </div>
+                </InteractiveCard>
             </div>
 
-            {/* Navigation Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Link href={`/portal/${token}/calendar`} className="group">
-                    <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer">
-                        <CardHeader>
-                            <CardTitle className="group-hover:text-primary transition-colors flex items-center gap-2">
-                                <Calendar className="h-5 w-5" />
-                                Proje Takvimi
-                            </CardTitle>
-                            <CardDescription>
-                                Tüm geçmiş ve gelecek çekim planlamalarınızı görüntüleyin.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+            {/* Navigation Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Link href={`/portal/${token}/calendar`} className="h-full">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Calendar className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Proje Takvimi</h3>
+                        <p className="text-sm text-zinc-500 mt-2">
+                            Tüm çekim planlamalarınızı ve set tarihlerini görüntüleyin.
+                        </p>
+                    </InteractiveCard>
                 </Link>
 
-                <Link href={`/portal/${token}/archive`} className="group">
-                    <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer">
-                        <CardHeader>
-                            <CardTitle className="group-hover:text-primary transition-colors flex items-center gap-2">
-                                <FileVideo className="h-5 w-5" />
-                                Medya Arşivi
-                            </CardTitle>
-                            <CardDescription>
-                                Teslim edilen video, fotoğraf ve belgelerinize erişin.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                <Link href={`/portal/${token}/archive`} className="h-full">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <FileVideo className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Medya Arşivi</h3>
+                        <p className="text-sm text-zinc-500 mt-2">
+                            Teslim edilen video, fotoğraf ve ham kayıtlarınıza erişin.
+                        </p>
+                    </InteractiveCard>
                 </Link>
 
-                <Link href={`/portal/${token}/finance`} className="group">
-                    <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer">
-                        <CardHeader>
-                            <CardTitle className="group-hover:text-primary transition-colors flex items-center gap-2">
-                                <Wallet className="h-5 w-5" />
-                                Finans & Faturalar
-                            </CardTitle>
-                            <CardDescription>
-                                Ödeme geçmişi ve bekleyen bakiyeler (PIN Korumalı).
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                <Link href={`/portal/${token}/finance`} className="h-full">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Wallet className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Finans & Ödeme</h3>
+                        <p className="text-sm text-zinc-500 mt-2">
+                            Ödeme geçmişi, teklifler ve bekleyen bakiyelerinizi yönetin.
+                        </p>
+                    </InteractiveCard>
                 </Link>
+
+                {/* Cal.com Booking Card */}
+                <BookingCard />
             </div>
         </div>
     )
