@@ -108,6 +108,13 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
     }
 
     async function processAudio(audioBlob: Blob) {
+        // Prevent processing if recording is too short (less than 1s or very small size)
+        if (duration < 1 || audioBlob.size < 1000) {
+            setState("idle");
+            toast.error("Kayıt çok kısa veya ses tespit edilemedi.");
+            return;
+        }
+
         setState("processing");
 
         try {
@@ -122,9 +129,10 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             const result = await response.json();
 
             if (!response.ok) {
-                // Return the specific error from API if available
-                const errorMessage = result.error || result.details || "İşleme başarısız";
-                throw new Error(errorMessage);
+                // Return the specific error and details from API if available
+                const mainError = result.error || "İşleme başarısız";
+                const detailedError = result.details ? `: ${result.details}` : "";
+                throw new Error(`${mainError}${detailedError}`);
             }
 
             setState("done");
@@ -136,11 +144,14 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             }, 2000);
         } catch (error: any) {
             setState("idle");
-            // Clearer error reporting
+            console.error("Processing error details:", error);
+
+            // Clearer error reporting with detailed message
             toast.error(error.message.includes("Unexpected token")
-                ? "Sunucu hatası: Beklenmedik yanıt alındı"
-                : error.message);
-            console.error("Processing error:", error);
+                ? "Sunucu hatası: Servis şu an yanıt vermiyor."
+                : error.message, {
+                duration: 6000
+            });
         }
     }
 

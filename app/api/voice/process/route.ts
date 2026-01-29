@@ -39,9 +39,16 @@ export async function POST(request: NextRequest) {
             });
         } catch (err: any) {
             console.error("Transcription Error:", err);
+            // Extract specific OpenAI error message if possible
+            const openAiError = err.error?.message || err.message || "Bilinmeyen OpenAI hatası";
+            const errorCode = err.code ? ` (Kod: ${err.code})` : "";
+
             return NextResponse.json(
-                { error: "Ses yazıya dökülemedi (Whisper)", details: err.message },
-                { status: 500 }
+                {
+                    error: "Ses yazıya dökülemedi (Whisper)",
+                    details: `${openAiError}${errorCode}. Lütfen OpenAI kotanızı ve faturalandırma ayarlarınızı kontrol edin.`
+                },
+                { status: err.status || 500 }
             );
         }
 
