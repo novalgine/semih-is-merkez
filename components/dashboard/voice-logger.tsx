@@ -16,6 +16,7 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
     const chunksRef = useRef<Blob[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const isCancelledRef = useRef(false);
 
     const MAX_DURATION = 120; // 2 minutes
 
@@ -30,10 +31,10 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
 
     async function startRecording() {
         try {
+            isCancelledRef.current = false;
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            // Detect supported audio format
             const mimeType = MediaRecorder.isTypeSupported('audio/webm')
                 ? 'audio/webm'
                 : 'audio/mp4';
@@ -47,15 +48,18 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             };
 
             mediaRecorder.onstop = async () => {
-                // Only process if not effectively cancelled
-                if (state as string === "recording") {
-                    const audioBlob = new Blob(chunksRef.current, { type: mimeType });
-                    await processAudio(audioBlob);
-                }
+                const wasCancelled = isCancelledRef.current;
 
                 if (streamRef.current) {
                     streamRef.current.getTracks().forEach(track => track.stop());
                     streamRef.current = null;
+                }
+
+                if (!wasCancelled) {
+                    const audioBlob = new Blob(chunksRef.current, { type: mimeType });
+                    await processAudio(audioBlob);
+                } else {
+                    setState("idle");
                 }
             };
 
@@ -63,7 +67,6 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             setState("recording");
             setDuration(0);
 
-            // Timer + Auto-stop
             timerRef.current = setInterval(() => {
                 setDuration(prev => {
                     if (prev >= MAX_DURATION) {
@@ -76,11 +79,12 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
         } catch (error) {
             toast.error("Mikrofon erişimi reddedildi");
             console.error(error);
+            setState("idle");
         }
     }
 
     function stopRecording() {
-        if (mediaRecorderRef.current?.state === "recording") {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
             mediaRecorderRef.current.stop();
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -90,15 +94,15 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
     }
 
     function cancelRecording() {
-        if (mediaRecorderRef.current?.state === "recording") {
-            // Set state to idle first to prevent onstop from processing
-            setState("idle");
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+            isCancelledRef.current = true;
             mediaRecorderRef.current.stop();
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
             chunksRef.current = [];
+            setState("idle");
             toast.info("Kayıt iptal edildi");
         }
     }
