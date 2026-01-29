@@ -27,21 +27,35 @@ export async function POST(request: NextRequest) {
         }
 
         // 1. Transcribe with Whisper
-        const transcription = await openai.audio.transcriptions.create({
-            file: new File([audioFile], "audio.webm", { type: "audio/webm" }),
-            model: "whisper-1",
-            language: "tr",
-        });
+        let transcription;
+        try {
+            const audioFileType = audioFile.type || "audio/webm";
+            const extension = audioFileType.includes("mp4") ? "mp4" : "webm";
+
+            transcription = await openai.audio.transcriptions.create({
+                file: new File([audioFile], `audio.${extension}`, { type: audioFileType }),
+                model: "whisper-1",
+                language: "tr",
+            });
+        } catch (err: any) {
+            console.error("Transcription Error:", err);
+            return NextResponse.json(
+                { error: "Ses yazıya dökülemedi (Whisper)", details: err.message },
+                { status: 500 }
+            );
+        }
 
         const rawText = transcription.text;
 
         // 2. Categorize + Clean with GPT-4o-mini
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                {
-                    role: "system",
-                    content: `Sen bir Türkçe asistansın. Kullanıcının sesli notunu analiz edip şunları yap:
+        let result;
+        try {
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Sen bir Türkçe asistansın. Kullanıcının sesli notunu analiz edip şunları yap:
 
 1. "umm", "eee", "şey" gibi dolgu kelimeleri çıkar.
 2. Metni daha okunaklı hale getir (ama anlamı değiştirme).
@@ -64,16 +78,22 @@ Cevabını JSON formatında ver:
   "category": "kategori",
   "sentiment": "duygu"
 }`
-                },
-                {
-                    role: "user",
-                    content: rawText
-                }
-            ],
-            response_format: { type: "json_object" }
-        });
-
-        const result = JSON.parse(completion.choices[0].message.content || "{}");
+                    },
+                    {
+                        role: "user",
+                        content: rawText
+                    }
+                ],
+                response_format: { type: "json_object" }
+            });
+            result = JSON.parse(completion.choices[0].message.content || "{}");
+        } catch (err: any) {
+            console.error("AI Analysis Error:", err);
+            return NextResponse.json(
+                { error: "Yapay zeka analizi başarısız (GPT)", details: err.message },
+                { status: 500 }
+            );
+        }
 
         // 3. Save to Supabase
         const supabase = await createClient();
@@ -87,14 +107,17 @@ Cevabını JSON formatında ver:
 
         if (dbError) {
             console.error("Supabase Insertion Error:", dbError);
-            throw new Error(`Database error: ${dbError.message}`);
+            return NextResponse.json(
+                { error: "Veritabanına kaydedilemedi", details: `Tablo 'daily_logs' bulunamadı veya RLS engeli var. SQL kodunu Supabase'de çalıştırdığınızdan emin olun. Hata: ${dbError.message}` },
+                { status: 500 }
+            );
         }
 
         return NextResponse.json(result);
     } catch (error: any) {
-        console.error("Voice processing error details:", error);
+        console.error("Generic Voice processing error details:", error);
         return NextResponse.json(
-            { error: "Processing failed", details: error.message },
+            { error: "İşlem sırasında beklenmedik hata", details: error.message },
             { status: 500 }
         );
     }
