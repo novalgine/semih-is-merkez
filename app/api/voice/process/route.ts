@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
         // Validate API key
         if (!process.env.OPENAI_API_KEY) {
             return NextResponse.json(
-                { error: "OpenAI API key missing" },
+                { error: "OpenAI API anahtarı eksik", details: "Lütfen .env.local dosyasını kontrol edin." },
                 { status: 500 }
             );
         }
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
         if (!audioFile) {
             return NextResponse.json(
-                { error: "No audio file" },
+                { error: "Ses dosyası alınamadı", details: "Tarayıcıdan sunucuya ses verisi iletilemedi." },
                 { status: 400 }
             );
         }

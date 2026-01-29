@@ -122,7 +122,9 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.details || "İşleme başarısız");
+                // Return the specific error from API if available
+                const errorMessage = result.error || result.details || "İşleme başarısız";
+                throw new Error(errorMessage);
             }
 
             setState("done");
@@ -134,7 +136,10 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             }, 2000);
         } catch (error: any) {
             setState("idle");
-            toast.error(`Ses işlenemedi: ${error.message}`);
+            // Clearer error reporting
+            toast.error(error.message.includes("Unexpected token")
+                ? "Sunucu hatası: Beklenmedik yanıt alındı"
+                : error.message);
             console.error("Processing error:", error);
         }
     }
