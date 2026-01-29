@@ -12,19 +12,20 @@ export default function PortalLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-950">
+        <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
             {/* Minimal Header */}
-            <header className="bg-zinc-900/50 border-b border-white/5 h-16 flex items-center justify-between px-6 sticky top-0 z-10 backdrop-blur-md">
+            <header className="bg-background/80 border-b border-border h-16 flex items-center justify-between px-6 sticky top-0 z-10 backdrop-blur-md">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-black font-bold text-lg shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                    <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-black font-bold text-lg shadow-sm">
                         F
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-white">Fennix Media</span>
+                    <span className="font-bold text-lg tracking-tight">Fennix Media</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-amber-500/80 uppercase tracking-widest hidden sm:inline bg-amber-500/5 px-3 py-1 rounded-full border border-amber-500/10">
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-500/80 uppercase tracking-widest hidden sm:inline bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
                         Müşteri Portalı
                     </span>
+                    <ThemeToggle />
                 </div>
             </header>
 
@@ -34,7 +35,7 @@ export default function PortalLayout({
             </main>
 
             {/* Minimal Footer */}
-            <footer className="py-8 text-center text-[10px] text-zinc-600 border-t border-white/5 bg-zinc-950 uppercase tracking-[0.2em]">
+            <footer className="py-8 text-center text-[10px] text-muted-foreground border-t border-border bg-background uppercase tracking-[0.2em]">
                 &copy; {new Date().getFullYear()} Fennix Media. Tüm hakları saklıdır.
             </footer>
         </div>

@@ -62,14 +62,14 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           <SoundProvider>
             {children}
             <Toaster />
-            <SonnerToaster position="top-right" theme="dark" />
+            <SonnerToaster position="top-right" />
           </SoundProvider>
         </ThemeProvider>
       </body>

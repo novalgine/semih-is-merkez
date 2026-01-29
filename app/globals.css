@@ -184,12 +184,11 @@
   h4,
   h5,
   h6 {
-    @apply tracking-tight text-white font-medium;
+    @apply tracking-tight text-foreground font-medium;
   }
 
   p {
-    @apply text-[#d4d4d8];
-    /* Zinc-300 */
+    @apply text-muted-foreground;
   }
 
   .pb-safe {
@@ -200,7 +199,7 @@
 /* Utility classes for "God Tier" effects */
 @layer utilities {
   .glass-panel {
-    @apply bg-black/60 backdrop-blur-2xl border border-white/[0.1];
+    @apply bg-background/60 dark:bg-black/60 backdrop-blur-2xl border border border-border dark:border-white/[0.1];
   }
 
   .specular-border {

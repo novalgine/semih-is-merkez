@@ -70,10 +70,10 @@ export default async function PortalDashboard({ params }: PageProps) {
                         <LayoutDashboard className="h-5 w-5" />
                         <span className="text-xs font-bold uppercase tracking-widest">Müşteri Paneli</span>
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white">
+                    <h1 className="text-4xl font-bold tracking-tight text-foreground">
                         Hoş Geldiniz, {customer.name}
                     </h1>
-                    <p className="text-zinc-500 mt-2 text-lg">
+                    <p className="text-muted-foreground mt-2 text-lg">
                         {customer.company ? `${customer.company} - ` : ""}Proje süreçlerinizi buradan takip edebilirsiniz.
                     </p>
                 </div>
@@ -86,31 +86,31 @@ export default async function PortalDashboard({ params }: PageProps) {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Next Shoot Card */}
-                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
+                <InteractiveCard className="bg-card border border-border p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Calendar className="h-5 w-5 text-amber-500" />
+                            <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Sıradaki Çekim</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sıradaki Çekim</span>
                     </div>
 
                     {nextShoot ? (
                         <div>
-                            <div className="text-3xl font-bold text-white tabular-nums">
+                            <div className="text-3xl font-bold text-foreground tabular-nums">
                                 {format(new Date(nextShoot.shoot_date), "d MMMM", { locale: tr })}
                             </div>
-                            <p className="text-sm text-zinc-400 mt-2 line-clamp-1 font-medium">
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-1 font-medium">
                                 {nextShoot.title}
                             </p>
-                            <div className="flex items-center gap-2 text-xs text-amber-500/80 mt-4 font-bold uppercase tracking-tighter">
+                            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-500/80 mt-4 font-bold uppercase tracking-tighter">
                                 <Clock className="h-3.5 w-3.5" />
                                 {format(new Date(nextShoot.shoot_date), "HH:mm")} • {nextShoot.location || "Konum Belirsiz"}
                             </div>
                         </div>
                     ) : (
                         <div>
-                            <div className="text-xl font-bold text-zinc-400">Planlanmış çekim yok</div>
-                            <p className="text-sm text-zinc-500 mt-2">
+                            <div className="text-xl font-bold text-muted-foreground">Planlanmış çekim yok</div>
+                            <p className="text-sm text-muted-foreground mt-2">
                                 Yeni bir proje için toplantı planlayabilirsiniz.
                             </p>
                         </div>
@@ -118,21 +118,21 @@ export default async function PortalDashboard({ params }: PageProps) {
                 </InteractiveCard>
 
                 {/* Deliverables Card */}
-                <InteractiveCard className="bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
+                <InteractiveCard className="bg-card border border-border p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <FileVideo className="h-5 w-5 text-amber-500" />
+                            <FileVideo className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Medya Arşivi</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Medya Arşivi</span>
                     </div>
 
-                    <div className="text-3xl font-bold text-white tabular-nums">{deliverables.length} Dosya</div>
-                    <p className="text-sm text-zinc-400 mt-2 font-medium">
+                    <div className="text-3xl font-bold text-foreground tabular-nums">{deliverables.length} Dosya</div>
+                    <p className="text-sm text-muted-foreground mt-2 font-medium">
                         Tüm teslim edilen içerikleriniz güvende.
                     </p>
                     <div className="mt-5">
                         <Link href={`/portal/${token}/archive`}>
-                            <div className="flex items-center gap-1 text-sm font-medium text-amber-500 hover:text-amber-400 transition-colors cursor-pointer group/link">
+                            <div className="flex items-center gap-1 text-sm font-medium text-amber-600 dark:text-amber-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors cursor-pointer group/link">
                                 Arşivi Görüntüle <ArrowRight className="h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
                             </div>
                         </Link>
@@ -141,19 +141,19 @@ export default async function PortalDashboard({ params }: PageProps) {
 
                 {/* Project Status Card */}
                 <Link href={`/portal/${token}/archive`}>
-                    <InteractiveCard className="h-full bg-zinc-900/50 border border-white/5 p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group cursor-pointer">
+                    <InteractiveCard className="h-full bg-card border border-border p-6 rounded-2xl hover:border-amber-500/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group cursor-pointer">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <CheckCircle2 className="h-5 w-5 text-amber-500" />
+                                <CheckCircle2 className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                             </div>
-                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Başarı Oranı</span>
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Başarı Oranı</span>
                         </div>
 
-                        <div className="text-3xl font-bold text-white tabular-nums">{completedShoots} Proje</div>
-                        <p className="text-sm text-zinc-400 mt-2 font-medium">
+                        <div className="text-3xl font-bold text-foreground tabular-nums">{completedShoots} Proje</div>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">
                             Birlikte tamamladığımız işler.
                         </p>
-                        <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="mt-4 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-amber-500 rounded-full" style={{ width: '100%' }} />
                         </div>
                     </InteractiveCard>
@@ -163,36 +163,36 @@ export default async function PortalDashboard({ params }: PageProps) {
             {/* Navigation Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Link href={`/portal/${token}/calendar`} className="h-full">
-                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-card border border-border hover:border-amber-500/50 transition-all group">
                         <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Calendar className="h-5 w-5 text-amber-500" />
+                            <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Proje Takvimi</h3>
-                        <p className="text-sm text-zinc-500 mt-2">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Proje Takvimi</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
                             Tüm çekim planlamalarınızı ve set tarihlerini görüntüleyin.
                         </p>
                     </InteractiveCard>
                 </Link>
 
                 <Link href={`/portal/${token}/archive`} className="h-full">
-                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-card border border-border hover:border-amber-500/50 transition-all group">
                         <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <FileVideo className="h-5 w-5 text-amber-500" />
+                            <FileVideo className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Medya Arşivi</h3>
-                        <p className="text-sm text-zinc-500 mt-2">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Medya Arşivi</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
                             Teslim edilen video, fotoğraf ve ham kayıtlarınıza erişin.
                         </p>
                     </InteractiveCard>
                 </Link>
 
                 <Link href={`/portal/${token}/finance`} className="h-full">
-                    <InteractiveCard className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:border-amber-500/50 transition-all group">
+                    <InteractiveCard className="h-full p-6 rounded-2xl bg-card border border-border hover:border-amber-500/50 transition-all group">
                         <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Wallet className="h-5 w-5 text-amber-500" />
+                            <Wallet className="h-5 w-5 text-amber-600 dark:text-amber-500" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors">Finans & Ödeme</h3>
-                        <p className="text-sm text-zinc-500 mt-2">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Finans & Ödeme</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
                             Ödeme geçmişi, teklifler ve bekleyen bakiyelerinizi yönetin.
                         </p>
                     </InteractiveCard>

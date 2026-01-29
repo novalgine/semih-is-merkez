@@ -19,7 +19,7 @@ export function AIBriefingSummary({ points }: AIBriefingSummaryProps) {
                     <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
                         <Sparkles className="h-4 w-4 text-indigo-400" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white tracking-tight">Günün Özeti</h3>
+                    <h3 className="text-lg font-semibold text-foreground tracking-tight">Günün Özeti</h3>
                 </div>
 
                 <div className="space-y-3">
@@ -30,11 +30,11 @@ export function AIBriefingSummary({ points }: AIBriefingSummaryProps) {
                                 {point.status === "waiting" && <Clock className="h-4 w-4 text-amber-500 shrink-0" />}
                                 {point.status === "alert" && <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />}
 
-                                <span className="text-zinc-300 font-medium">{point.text}</span>
+                                <span className="text-muted-foreground font-medium">{point.text}</span>
                             </div>
                         ))
                     ) : (
-                        <p className="text-zinc-500 text-sm italic">Özet hazırlanıyor...</p>
+                        <p className="text-muted-foreground text-sm italic">Özet hazırlanıyor...</p>
                     )}
                 </div>
             </div>
