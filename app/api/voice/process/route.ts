@@ -77,7 +77,7 @@ Cevabını JSON formatında ver:
 
         // 3. Save to Supabase
         const supabase = await createClient();
-        const { error } = await supabase
+        const { error: dbError } = await supabase
             .from('daily_logs')
             .insert({
                 content: result.content,
@@ -85,13 +85,16 @@ Cevabını JSON formatında ver:
                 sentiment: result.sentiment,
             });
 
-        if (error) throw error;
+        if (dbError) {
+            console.error("Supabase Insertion Error:", dbError);
+            throw new Error(`Database error: ${dbError.message}`);
+        }
 
         return NextResponse.json(result);
-    } catch (error) {
-        console.error("Voice processing error:", error);
+    } catch (error: any) {
+        console.error("Voice processing error details:", error);
         return NextResponse.json(
-            { error: "Processing failed" },
+            { error: "Processing failed", details: error.message },
             { status: 500 }
         );
     }
