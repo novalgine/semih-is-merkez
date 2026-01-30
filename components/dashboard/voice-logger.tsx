@@ -108,10 +108,10 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
     }
 
     async function processAudio(audioBlob: Blob) {
-        // Prevent processing if recording is too short (less than 1s or very small size)
-        if (duration < 1 || audioBlob.size < 1000) {
+        // More lenient check: 100 bytes is practically empty, 1000 was maybe too much for very short clips
+        if (audioBlob.size < 500) {
             setState("idle");
-            toast.error("Kayıt çok kısa veya ses tespit edilemedi.");
+            toast.error("Ses tespit edilemedi. Lütfen mikrofonunuzu kontrol edin.");
             return;
         }
 
