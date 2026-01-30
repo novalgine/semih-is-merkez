@@ -59,24 +59,33 @@ export async function createTask(content: string, assignedDate?: string | null, 
     return { success: true, task: data }
 }
 
-export async function updateTask(id: string, updates: Partial<Task>) {
+export async function updateTask(data: FormData | { id: string, updates: Partial<Task> }) {
     const supabase = await createClient()
 
-    // assigned_date string gelirse formatla, Date gelirse formatla
-    let formattedDate = updates.assigned_date
+    let id: string;
+    let updates: any = {};
 
-    // @ts-ignore
+    if (data instanceof FormData) {
+        id = data.get('id') as string;
+        updates = {
+            content: data.get('content') as string,
+            category: data.get('category') as string,
+            assigned_date: data.get('assigned_date') as string,
+            is_completed: data.get('is_completed') === 'true'
+        };
+    } else {
+        id = data.id;
+        updates = data.updates;
+    }
+
+    // assigned_date string gelirse formatla, Date gelirse formatla
     if (updates.assigned_date instanceof Date) {
-        // @ts-ignore
-        formattedDate = format(updates.assigned_date, 'yyyy-MM-dd')
+        updates.assigned_date = format(updates.assigned_date, 'yyyy-MM-dd')
     }
 
     const { error } = await supabase
         .from('tasks')
-        .update({
-            ...updates,
-            assigned_date: formattedDate
-        })
+        .update(updates)
         .eq('id', id)
 
     if (error) {
@@ -85,10 +94,11 @@ export async function updateTask(id: string, updates: Partial<Task>) {
     }
 
     revalidatePath('/daily')
+    revalidatePath('/') // Dashboard için
     return { success: true }
 }
 
-export async function deleteTask(id: string) {
+export async function deleteTask(id: string, path?: string) {
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -102,6 +112,7 @@ export async function deleteTask(id: string) {
     }
 
     revalidatePath('/daily')
+    if (path) revalidatePath(path)
     return { success: true }
 }
 
