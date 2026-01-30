@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, Trash2 } from 'lucide-react';
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from '@/components/ui/button';
 import {
@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from '@/components/ui/textarea';
 import { deleteTask, updateTask } from '@/app/actions/tasks';
-import { toast } from 'sonner';
 
 const taskSchema = z.object({
     content: z.string().min(1, 'Görev içeriği boş olamaz'),
@@ -72,6 +71,7 @@ const CATEGORIES = [
 export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: EditTaskDialogProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { toast } = useToast();
 
     const form = useForm<TaskSchemaCheck>({
         resolver: zodResolver(taskSchema),
@@ -81,14 +81,6 @@ export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: Edit
             assigned_date: task.assigned_date || format(new Date(), 'yyyy-MM-dd'),
         },
     });
-
-    // Reset form when task changes
-    // useEffect(() => {
-    //     if (open) {
-    //        form.reset(...) 
-    //     }
-    // }, [open, task, form]);
-    // Note: Ideally use useEffect to sync prop changes to form, strictly relying on key prop on parent is simpler.
 
     const onSubmit = async (values: TaskSchemaCheck) => {
         setIsLoading(true);
@@ -105,14 +97,14 @@ export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: Edit
             const result = await updateTask(formData);
 
             if (result.success) {
-                toast.success('Görev güncellendi');
+                toast({ title: 'Başarılı', description: 'Görev güncellendi' });
                 onOpenChange(false);
                 if (onTaskUpdated) onTaskUpdated();
             } else {
-                toast.error('Güncelleme başarısız: ' + result.error);
+                toast({ title: 'Hata', description: 'Güncelleme başarısız: ' + (result as any).error, variant: 'destructive' });
             }
         } catch (error) {
-            toast.error('Bir hata oluştu');
+            toast({ title: 'Hata', description: 'Bir hata oluştu', variant: 'destructive' });
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -126,14 +118,14 @@ export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: Edit
         try {
             const result = await deleteTask(task.id, '/');
             if (result.success) {
-                toast.success('Görev silindi');
+                toast({ title: 'Silindi', description: 'Görev silindi' });
                 onOpenChange(false);
                 if (onTaskUpdated) onTaskUpdated();
             } else {
-                toast.error('Silme işlemi başarısız');
+                toast({ title: 'Hata', description: 'Silme işlemi başarısız', variant: 'destructive' });
             }
         } catch (error) {
-            toast.error('Hata oluştu');
+            toast({ title: 'Hata', description: 'Hata oluştu', variant: 'destructive' });
         } finally {
             setIsDeleting(false);
         }
