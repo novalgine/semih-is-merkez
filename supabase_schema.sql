@@ -70,10 +70,12 @@ create table if not exists proposals (
 create table if not exists tasks (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  title text not null,
+  content text,
   description text,
   assigned_date date,
-  status text check (status in ('pending', 'completed')) default 'pending',
+  is_completed boolean default false,
+  position integer default 0,
+  category text,
   priority text check (priority in ('low', 'medium', 'high')) default 'medium',
   customer_id uuid references customers(id) on delete set null,
   completed_at timestamp with time zone
