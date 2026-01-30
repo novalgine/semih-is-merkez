@@ -13,9 +13,10 @@ interface TaskColumnProps {
     tasks: Task[]
     date?: string | null
     isToday?: boolean
+    onEdit?: (task: Task) => void
 }
 
-export function TaskColumn({ id, title, tasks, date, isToday }: TaskColumnProps) {
+export function TaskColumn({ id, title, tasks, date, isToday, onEdit }: TaskColumnProps) {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -43,10 +44,10 @@ export function TaskColumn({ id, title, tasks, date, isToday }: TaskColumnProps)
             </div>
 
             {/* Task List */}
-            <div ref={setNodeRef} className="flex-1 p-2 overflow-y-auto min-h-[150px] space-y-2">
+            <div ref={setNodeRef} className="flex-1 p-2 overflow-y-auto min-h-[150px] space-y-2 custom-scrollbar">
                 <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                     {tasks.map((task) => (
-                        <TaskCard key={task.id} task={task} />
+                        <TaskCard key={task.id} task={task} onEdit={onEdit} />
                     ))}
                 </SortableContext>
 
