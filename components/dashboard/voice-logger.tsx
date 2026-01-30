@@ -136,7 +136,7 @@ export function VoiceLogger({ onLogCreated }: { onLogCreated: () => void }) {
             }
 
             setState("done");
-            toast.success(`Kaydedildi: ${result.category}`);
+            toast.success(result.feedback || "İşlem başarıyla tamamlandı");
 
             setTimeout(() => {
                 setState("idle");

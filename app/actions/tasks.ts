@@ -9,6 +9,7 @@ export interface Task {
     content: string
     is_completed: boolean
     assigned_date: string | null // YYYY-MM-DD string or null
+    category: string | null
     position: number
     created_at: string
 }
@@ -35,7 +36,7 @@ export async function getTasks(startDate: Date, endDate: Date) {
     return data as Task[]
 }
 
-export async function createTask(content: string, assignedDate?: string | null) {
+export async function createTask(content: string, assignedDate?: string | null, category?: string | null) {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -43,6 +44,7 @@ export async function createTask(content: string, assignedDate?: string | null) 
         .insert({
             content,
             assigned_date: assignedDate || null,
+            category: category || null,
             is_completed: false
         })
         .select()
