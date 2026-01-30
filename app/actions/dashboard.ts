@@ -236,7 +236,9 @@ export async function getTodaysTasks() {
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
+    const todayStr = format(today, 'yyyy-MM-dd')
 
+    // 1. Fetch Shoots
     const shootsResult = await supabase.from('shoots')
         .select(`
             id, 
@@ -250,9 +252,16 @@ export async function getTodaysTasks() {
         .lt('shoot_date', tomorrow.toISOString())
         .order('shoot_time', { ascending: true })
 
-    const shoots = shootsResult.data
+    // 2. Fetch Tasks
+    const tasksResult = await supabase.from('tasks')
+        .select('*')
+        .eq('assigned_date', todayStr)
+        .order('position', { ascending: true })
 
-    const typedShoots = (shoots || []).map((s: any) => ({
+    const shoots = shootsResult.data || []
+    const tasks = tasksResult.data || []
+
+    const typedShoots = shoots.map((s: any) => ({
         id: s.id,
         title: s.title,
         shoot_date: s.shoot_date,
@@ -262,6 +271,7 @@ export async function getTodaysTasks() {
     }))
 
     return {
-        shoots: typedShoots
+        shoots: typedShoots,
+        tasks: tasks as any[]
     }
 }

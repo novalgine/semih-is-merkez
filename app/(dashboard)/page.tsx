@@ -2,9 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { generateDashboardSummary } from "@/lib/generate-dashboard-summary";
 import { DashboardClient } from "@/components/modules/dashboard/dashboard-client";
 
-import { RecentLogs } from "@/components/dashboard/recent-logs";
-import { Suspense } from "react";
-
 export default async function DashboardPage() {
     const supabase = await createClient();
 
@@ -70,11 +67,6 @@ export default async function DashboardPage() {
             activeClients={activeClients}
             upcomingShoots={upcomingShoots}
             netWealth={netWealth}
-            recentLogs={
-                <Suspense fallback={<p className="text-muted-foreground text-sm italic">Yükleniyor...</p>}>
-                    <RecentLogs />
-                </Suspense>
-            }
         />
     );
 }
