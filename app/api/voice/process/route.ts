@@ -79,11 +79,11 @@ Duygu (Sentiment) Belirleme:
 - Aciliyet belirtiyorsa → Urgent
 - Normal → Neutral
 
-Cevabını JSON formatında ver. ÖNEMLİ: "category" değeri sadece şunlardan biri olabilir: "To-Do", "Idea", "Thought", "Meeting Note". Başka bir değer veya Türkçe karşılık (Fikir vb.) kullanma. "sentiment" değeri sadece "Positive", "Neutral" veya "Urgent" olabilir.
+Cevabını JSON formatında ver.
 {
-  "content": "temizlenmiş metin (max 200 karakter)",
-  "category": "To-Do | Idea | Thought | Meeting Note",
-  "sentiment": "Positive | Neutral | Urgent"
+  "content": "Temizlenmiş, net ve anlaşılır metin",
+  "category": "İçeriğe en uygun kısa kategori ismi (Örn: To-Do, Fikir, Proje Notu, Alışveriş vb.)",
+  "sentiment": "Metnin duygu durumu (Örn: Positive, Neutral, Urgent, Heyecanlı)"
 }`
                     },
                     {
@@ -102,35 +102,14 @@ Cevabını JSON formatında ver. ÖNEMLİ: "category" değeri sadece şunlardan 
             );
         }
 
-        // Helper functions for strict validation
-        function normalizeCategory(raw: string): string {
-            const lower = raw?.toLowerCase().trim() || "";
-            if (lower.includes("todo") || lower.includes("yap") || lower.includes("task")) return "To-Do";
-            if (lower.includes("idea") || lower.includes("fikir")) return "Idea";
-            if (lower.includes("meet") || lower.includes("topla")) return "Meeting Note";
-            // Default fallback
-            return "Thought";
-        }
-
-        function normalizeSentiment(raw: string): string {
-            const lower = raw?.toLowerCase().trim() || "";
-            if (lower.includes("pos") || lower.includes("poz")) return "Positive";
-            if (lower.includes("urg") || lower.includes("acili")) return "Urgent";
-            return "Neutral";
-        }
-
-        // Normalize AI output before DB insertion
-        const finalCategory = normalizeCategory(result.category);
-        const finalSentiment = normalizeSentiment(result.sentiment);
-
-        // 3. Save to Supabase
+        // 3. Save to Supabase (Flexible - No Strict Constraints)
         const supabase = await createClient();
         const { error: dbError } = await supabase
             .from('daily_logs')
             .insert({
                 content: result.content,
-                category: finalCategory,
-                sentiment: finalSentiment,
+                category: result.category, // Save whatever reasonable category AI found
+                sentiment: result.sentiment,
             });
 
         if (dbError) {
