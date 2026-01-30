@@ -79,11 +79,11 @@ Duygu (Sentiment) Belirleme:
 - Aciliyet belirtiyorsa → Urgent
 - Normal → Neutral
 
-Cevabını JSON formatında ver:
+Cevabını JSON formatında ver. ÖNEMLİ: "category" değeri sadece şunlardan biri olabilir: "To-Do", "Idea", "Thought", "Meeting Note". Başka bir değer veya Türkçe karşılık (Fikir vb.) kullanma. "sentiment" değeri sadece "Positive", "Neutral" veya "Urgent" olabilir.
 {
   "content": "temizlenmiş metin (max 200 karakter)",
-  "category": "kategori",
-  "sentiment": "duygu"
+  "category": "To-Do | Idea | Thought | Meeting Note",
+  "sentiment": "Positive | Neutral | Urgent"
 }`
                     },
                     {
