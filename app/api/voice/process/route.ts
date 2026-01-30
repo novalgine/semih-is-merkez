@@ -102,14 +102,35 @@ Cevabını JSON formatında ver. ÖNEMLİ: "category" değeri sadece şunlardan 
             );
         }
 
+        // Helper functions for strict validation
+        function normalizeCategory(raw: string): string {
+            const lower = raw?.toLowerCase().trim() || "";
+            if (lower.includes("todo") || lower.includes("yap") || lower.includes("task")) return "To-Do";
+            if (lower.includes("idea") || lower.includes("fikir")) return "Idea";
+            if (lower.includes("meet") || lower.includes("topla")) return "Meeting Note";
+            // Default fallback
+            return "Thought";
+        }
+
+        function normalizeSentiment(raw: string): string {
+            const lower = raw?.toLowerCase().trim() || "";
+            if (lower.includes("pos") || lower.includes("poz")) return "Positive";
+            if (lower.includes("urg") || lower.includes("acili")) return "Urgent";
+            return "Neutral";
+        }
+
+        // Normalize AI output before DB insertion
+        const finalCategory = normalizeCategory(result.category);
+        const finalSentiment = normalizeSentiment(result.sentiment);
+
         // 3. Save to Supabase
         const supabase = await createClient();
         const { error: dbError } = await supabase
             .from('daily_logs')
             .insert({
                 content: result.content,
-                category: result.category,
-                sentiment: result.sentiment,
+                category: finalCategory,
+                sentiment: finalSentiment,
             });
 
         if (dbError) {
