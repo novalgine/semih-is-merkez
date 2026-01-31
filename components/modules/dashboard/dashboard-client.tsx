@@ -21,7 +21,7 @@ import { TodaysTasks } from "@/components/modules/dashboard/todays-tasks";
 import { staggerContainer, staggerItem } from "@/lib/motion-variants";
 import { SummaryPoint } from "@/lib/generate-dashboard-summary";
 
-interface DashboardClientProps {
+export interface DashboardClientProps {
     summaryPoints: SummaryPoint[];
     activeClients: any[];
     upcomingShoots: any[];
