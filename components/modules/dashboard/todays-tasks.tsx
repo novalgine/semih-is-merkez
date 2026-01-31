@@ -80,7 +80,7 @@ export function TodaysTasks() {
                         <Calendar className="h-5 w-5 text-primary" />
                         Bugünün İşleri
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription suppressHydrationWarning>
                         {format(new Date(), "d MMMM yyyy, EEEE", { locale: tr })}
                     </CardDescription>
                 </CardHeader>
