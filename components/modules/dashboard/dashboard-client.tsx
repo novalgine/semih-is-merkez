@@ -200,42 +200,49 @@ export function DashboardClient({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {upcomingShoots.length > 0 ? (
-                                                    return {
-                                day: date.getDate().toString(),
-                            month: new Intl.DateTimeFormat('tr-TR', {month: 'short' }).format(date)
-                                                    };
-                                                } catch (e) {
-                                                    return {day: '?', month: '-' };
-                                                }
-                                            })();
+                                upcomingShoots.map((shoot) => {
+                                    const dateInfo = (() => {
+                                        try {
+                                            if (!shoot.shoot_date) return { day: '?', month: '-' };
+                                            const date = new Date(shoot.shoot_date);
+                                            // Check for invalid date
+                                            if (isNaN(date.getTime())) return { day: '?', month: '-' };
+                                            return {
+                                                day: date.getDate().toString(),
+                                                month: new Intl.DateTimeFormat('tr-TR', { month: 'short' }).format(date)
+                                            };
+                                        } catch (e) {
+                                            return { day: '?', month: '-' };
+                                        }
+                                    })();
 
-                            return (
-                            <Link key={shoot.id} href={`/shoots/${shoot.id}`}>
-                                <div className="flex items-center gap-5 p-5 rounded-2xl bg-muted/40 border border-transparent hover:border-orange-500/30 transition-all group/shoot">
-                                    <div className="flex flex-col items-center justify-center h-16 w-16 rounded-[1.2rem] bg-card border border-border shadow-sm">
-                                        <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter" suppressHydrationWarning>
-                                            {dateInfo.month}
-                                        </span>
-                                        <span className="text-2xl font-black text-foreground" suppressHydrationWarning>
-                                            {dateInfo.day}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-foreground transition-colors line-clamp-1">{shoot.title}</h4>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground/70 bg-background px-3 py-1 rounded-full border border-border">
-                                                {shoot.customers?.name || 'Bireysel'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                            );
-                                        })
+                                    return (
+                                        <Link key={shoot.id} href={`/shoots/${shoot.id}`}>
+                                            <div className="flex items-center gap-5 p-5 rounded-2xl bg-muted/40 border border-transparent hover:border-orange-500/30 transition-all group/shoot">
+                                                <div className="flex flex-col items-center justify-center h-16 w-16 rounded-[1.2rem] bg-card border border-border shadow-sm">
+                                                    <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter" suppressHydrationWarning>
+                                                        {dateInfo.month}
+                                                    </span>
+                                                    <span className="text-2xl font-black text-foreground" suppressHydrationWarning>
+                                                        {dateInfo.day}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-foreground transition-colors line-clamp-1">{shoot.title}</h4>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className="text-[10px] font-bold text-muted-foreground/70 bg-background px-3 py-1 rounded-full border border-border">
+                                                            {shoot.customers?.name || 'Bireysel'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    );
+                                })
                             ) : (
-                            <p className="text-muted-foreground text-sm italic col-span-2">Ortalık sakin, yakında çekim görünmüyor.</p>
+                                <p className="text-muted-foreground text-sm italic col-span-2">Ortalık sakin, yakında çekim görünmüyor.</p>
                             )
-                                }
+                            }
                         </div>
                     </InteractiveCard>
                 </motion.div>
