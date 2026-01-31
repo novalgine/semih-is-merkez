@@ -13,22 +13,9 @@ import {
 import Link from "next/link";
 import { VoiceLogger } from "@/components/dashboard/voice-logger";
 import { useRouter } from "next/navigation";
-import { Suspense } from "react";
+import { useCallback } from "react";
 
-import { InteractiveCard } from "@/components/ui/interactive-card";
-import { Button } from "@/components/ui/button";
-import { AIBriefingSummary } from "@/components/modules/dashboard/ai-briefing-summary";
-import { staggerContainer, staggerItem } from "@/lib/motion-variants";
-import { SummaryPoint } from "@/lib/generate-dashboard-summary";
-
-import { TodaysTasks } from "@/components/modules/dashboard/todays-tasks";
-
-interface DashboardClientProps {
-    summaryPoints: SummaryPoint[];
-    activeClients: any[];
-    upcomingShoots: any[];
-    netWealth: number;
-}
+// ... existing imports
 
 export function DashboardClient({
     summaryPoints,
@@ -37,6 +24,10 @@ export function DashboardClient({
     netWealth
 }: DashboardClientProps) {
     const router = useRouter();
+
+    const handleLogCreated = useCallback(() => {
+        router.refresh();
+    }, [router]);
 
     return (
         <motion.div
@@ -52,9 +43,11 @@ export function DashboardClient({
                 </motion.div>
 
                 <motion.div variants={staggerItem} className="w-full md:w-auto">
-                    <VoiceLogger onLogCreated={() => router.refresh()} />
+                    <VoiceLogger onLogCreated={handleLogCreated} />
                 </motion.div>
             </div>
+
+            {/* Rest of the component ... */}
 
             {/* Main Bento Grid */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[minmax(180px,auto)]">
