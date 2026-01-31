@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import withPWA from '@ducanh2912/next-pwa';
 
 const nextConfig: NextConfig = {
-  turbopack: {}, // Silence webpack config warning
+  // Turbopack disabled to fix dynamic import build error
 };
 
 export default withPWA({
