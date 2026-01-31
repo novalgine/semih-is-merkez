@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useCallback, ReactNode, useState, useEffect } from 'react';
 import useSound from 'use-sound';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
@@ -18,10 +18,15 @@ const TEST_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2568/2568-pr
 
 export function SoundProvider({ children }: { children: ReactNode }) {
     const [isMuted, setIsMuted] = useLocalStorage('fennix-sound-muted', false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [play] = useSound(TEST_SOUND_URL, {
-        volume: 0.12, // Subtle whisper feedback
-        soundEnabled: !isMuted,
+        volume: 0.12,
+        soundEnabled: !isMuted && mounted,
         interrupt: true,
         onload: () => console.log("Sound loaded successfully!"),
         onloaderror: (id: any, err: any) => console.error("Sound load error:", err),
@@ -29,23 +34,29 @@ export function SoundProvider({ children }: { children: ReactNode }) {
 
     const playSound = useCallback(
         (soundId: string) => {
+            if (!mounted) return;
             console.log(`Attempting to play sound: ${soundId} (Muted: ${isMuted})`);
 
             if (!isMuted) {
                 try {
                     play();
-                    console.log("Sound played!");
                 } catch (error) {
                     console.error('Sound playback failed:', error);
                 }
             }
         },
-        [isMuted, play]
+        [isMuted, play, mounted]
     );
 
     const toggleMute = useCallback(() => {
         setIsMuted((prev) => !prev);
     }, [setIsMuted]);
+
+    // Prevent hydration mismatch by rendering children only, or rendering provider with default safe values until mounted
+    // Actually, context provider is fine to render, just consumers need to be safe.
+    // The issue was `useLocalStorage` causing mismatch in `isMuted` value.
+    // Now that useLocalStorage is safe, `isMuted` is `false` on server and `false` on client first render.
+    // Then it updates. So no mismatch.
 
     return (
         <SoundContext.Provider value={{ playSound, isMuted, toggleMute }}>
