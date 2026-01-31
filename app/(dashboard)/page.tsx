@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 // FORCE CLIENT SIDE RENDER (Fixes Hydration/Browser API crashes)
 const DashboardClient = dynamic(
-    () => import('@/components/modules/dashboard/dashboard-client').then(mod => mod.DashboardClient),
+    () => import('../../components/modules/dashboard/dashboard-client').then(mod => mod.DashboardClient),
     { ssr: false }
 );
 
