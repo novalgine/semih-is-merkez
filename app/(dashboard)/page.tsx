@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateDashboardSummary } from "@/lib/generate-dashboard-summary";
-import { DashboardClient } from "@/components/modules/dashboard/dashboard-client";
+import dynamic from 'next/dynamic';
+
+// FORCE CLIENT SIDE RENDER (Fixes Hydration/Browser API crashes)
+const DashboardClient = dynamic(
+    () => import('@/components/modules/dashboard/dashboard-client').then(mod => mod.DashboardClient),
+    { ssr: false }
+);
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -60,6 +66,9 @@ export default async function DashboardPage() {
     } catch (error) {
         console.error("Dashboard data fetch error:", error);
     }
+
+    // Ensure serializable data by parsing/stringifying if necessary, or just simple props
+    // Supabase returns dates as strings mostly, but specific checks help.
 
     return (
         <DashboardClient
