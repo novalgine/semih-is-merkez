@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import withPWA from '@ducanh2912/next-pwa';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['@react-pdf/renderer'],
+  },
 };
 
 export default withPWA({
