@@ -1,12 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateDashboardSummary } from "@/lib/generate-dashboard-summary";
-import dynamic from 'next/dynamic';
+import ClientOnly from "@/components/client-only";
+import { DashboardClient } from "@/components/modules/dashboard/dashboard-client";
 
-// FORCE CLIENT SIDE RENDER (Fixes Hydration/Browser API crashes)
-const DashboardClient = dynamic(
-    () => import('../../components/modules/dashboard/dashboard-client').then(mod => mod.DashboardClient),
-    { ssr: false }
-);
+// Standard hydration handling via ClientOnly wrapper (Bypasses Turbopack dynamic bug)
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -71,11 +68,13 @@ export default async function DashboardPage() {
     // Supabase returns dates as strings mostly, but specific checks help.
 
     return (
-        <DashboardClient
-            summaryPoints={summaryPoints}
-            activeClients={activeClients}
-            upcomingShoots={upcomingShoots}
-            netWealth={netWealth}
-        />
+        <ClientOnly>
+            <DashboardClient
+                summaryPoints={summaryPoints}
+                activeClients={activeClients}
+                upcomingShoots={upcomingShoots}
+                netWealth={netWealth}
+            />
+        </ClientOnly>
     );
 }
