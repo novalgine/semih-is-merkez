@@ -9,8 +9,11 @@ export async function POST(request: NextRequest) {
         // Render PDF to buffer on the server
         const pdfBuffer = await renderToBuffer(<ProposalDocument data={data} />);
 
+        // Convert Buffer to Blob for NextResponse
+        const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
+
         // Return PDF as downloadable file
-        return new NextResponse(pdfBuffer, {
+        return new NextResponse(pdfBlob, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename="Teklif-${data.projectTitle || 'Document'}.pdf"`,
