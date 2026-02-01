@@ -41,6 +41,7 @@ const categoryColors: Record<string, string> = {
 export function TodaysTasks() {
     const [data, setData] = useState<TaskData | null>(null)
     const [loading, setLoading] = useState(true)
+    const [editingTask, setEditingTask] = useState<any>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,8 +70,6 @@ export function TodaysTasks() {
 
     const hasShoots = data?.shoots && data.shoots.length > 0
     const hasTasks = data?.tasks && data.tasks.length > 0
-
-    const [editingTask, setEditingTask] = useState<any>(null);
 
     return (
         <>
