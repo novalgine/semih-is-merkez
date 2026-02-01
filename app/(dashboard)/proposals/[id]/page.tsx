@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getProposal } from "@/app/actions/proposals"
 import { ProposalActions } from "@/components/modules/proposals/proposal-actions"
-import { PDFDownloadButton } from "@/components/modules/proposals/pdf-download-button"
 
 export default async function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -20,33 +19,10 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
         notFound()
     }
 
-    // Prepare data for PDF
-    const pdfData = {
-        customerName: proposal.customers?.name || "Müşteri",
-        companyName: proposal.customers?.company || "",
-        projectTitle: proposal.project_title,
-        date: format(new Date(proposal.created_at), 'd MMMM yyyy', { locale: tr }),
-        validUntil: proposal.valid_until ? format(new Date(proposal.valid_until), 'd MMMM yyyy', { locale: tr }) : "-",
-        items: proposal.proposal_items.map((item: any) => ({
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unit_price,
-            total: item.quantity * item.unit_price
-        })),
-        subtotal: proposal.total_amount / 1.2, // Yaklaşık hesap (KDV dahil saklıyorsak)
-        tax: proposal.total_amount - (proposal.total_amount / 1.2),
-        total: proposal.total_amount
-    }
-
-    // Recalculate exact subtotal from items to be precise
-    const subtotal = pdfData.items.reduce((sum: number, item: any) => sum + item.total, 0)
+    // Calculate precise totals
+    const subtotal = proposal.proposal_items.reduce((sum: any, item: any) => sum + (item.quantity * item.unit_price), 0)
     const tax = subtotal * (proposal.tax_rate / 100)
     const total = subtotal + tax
-
-    // Update pdfData with precise calculations
-    pdfData.subtotal = subtotal
-    pdfData.tax = tax
-    pdfData.total = total
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 pb-20">
@@ -72,7 +48,6 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
                 </div>
                 <div className="flex gap-2">
                     <ProposalActions id={proposal.id} status={proposal.status} />
-                    <PDFDownloadButton data={pdfData} fileName={`Teklif-${proposal.project_title}.pdf`} />
                 </div>
             </div>
 
