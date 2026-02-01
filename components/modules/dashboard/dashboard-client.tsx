@@ -28,36 +28,6 @@ export interface DashboardClientProps {
     netWealth: number;
 }
 
-"use client";
-
-import { motion } from "framer-motion";
-import {
-    Wallet,
-    Users,
-    Plus,
-    CreditCard,
-    Calendar,
-    ArrowUpRight,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
-
-import { VoiceLogger } from "@/components/dashboard/voice-logger";
-import { InteractiveCard } from "@/components/ui/interactive-card";
-import { Button } from "@/components/ui/button";
-import { AIBriefingSummary } from "@/components/modules/dashboard/ai-briefing-summary";
-import { TodaysTasks } from "@/components/modules/dashboard/todays-tasks";
-import { staggerContainer, staggerItem } from "@/lib/motion-variants";
-import { SummaryPoint } from "@/lib/generate-dashboard-summary";
-
-export interface DashboardClientProps {
-    summaryPoints: SummaryPoint[];
-    activeClients: any[];
-    upcomingShoots: any[];
-    netWealth: number;
-}
-
 export function DashboardClient({
     summaryPoints,
     activeClients,
@@ -196,7 +166,6 @@ export function DashboardClient({
                 </motion.div>
 
                 {/* 7. YAKLAŞAN ÇEKİMLER (Sağ Alt - ve Alt Orta Genişlik) */}
-                {/* 1x1 on Large screens to fill grid properly, or 2 cols wide depending on layout flow */}
                 <motion.div variants={staggerItem} className="col-span-1 h-full">
                     <InteractiveCard className="h-full bg-card border-border p-6 rounded-2xl shadow-sm flex flex-col">
                         <div className="flex items-center justify-between mb-4">
