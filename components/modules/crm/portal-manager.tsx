@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Copy, RefreshCw, Check, Link as LinkIcon, Lock } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -26,11 +26,17 @@ export function PortalManager({ customerId, currentToken, currentPin }: PortalMa
     const [pin, setPin] = useState<string>(currentPin || "")
     const [loading, setLoading] = useState(false)
     const [copied, setCopied] = useState(false)
+    const [portalUrl, setPortalUrl] = useState<string>("")
     const { toast } = useToast()
 
-    const portalUrl = token
-        ? `${window.location.origin}/portal/${token}`
-        : ""
+    // Update portal URL when token changes (client-side only)
+    useEffect(() => {
+        if (token && typeof window !== 'undefined') {
+            setPortalUrl(`${window.location.origin}/portal/${token}`)
+        } else {
+            setPortalUrl("")
+        }
+    }, [token])
 
     const handleGenerateToken = async () => {
         if (!confirm("Yeni bir token oluşturmak eski linki geçersiz kılacaktır. Devam edilsin mi?")) return

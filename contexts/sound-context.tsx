@@ -24,9 +24,9 @@ export function SoundProvider({ children }: { children: ReactNode }) {
         setMounted(true);
     }, []);
 
+    // Always call useSound unconditionally to avoid hook count mismatch
     const [play] = useSound(TEST_SOUND_URL, {
         volume: 0.12,
-        soundEnabled: !isMuted && mounted,
         interrupt: true,
         onload: () => console.log("Sound loaded successfully!"),
         onloaderror: (id: any, err: any) => console.error("Sound load error:", err),
@@ -34,15 +34,15 @@ export function SoundProvider({ children }: { children: ReactNode }) {
 
     const playSound = useCallback(
         (soundId: string) => {
-            if (!mounted) return;
-            console.log(`Attempting to play sound: ${soundId} (Muted: ${isMuted})`);
+            // Check conditions before playing, not in hook options
+            if (!mounted || isMuted) return;
 
-            if (!isMuted) {
-                try {
-                    play();
-                } catch (error) {
-                    console.error('Sound playback failed:', error);
-                }
+            console.log(`Attempting to play sound: ${soundId}`);
+
+            try {
+                play();
+            } catch (error) {
+                console.error('Sound playback failed:', error);
             }
         },
         [isMuted, play, mounted]
