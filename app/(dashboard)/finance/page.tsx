@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { FinanceClient } from "@/components/modules/finance/finance-client";
 
+export const dynamic = 'force-dynamic';
+
 export default async function FinancePage() {
     let netWealth = 0;
     let monthlyIncome = 0;
