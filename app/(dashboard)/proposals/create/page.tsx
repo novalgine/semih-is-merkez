@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Trash2, Wand2, Loader2, Save, Download } from "lucide-react"
+import { Plus, Trash2, Wand2, Loader2, Save } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,6 @@ import { generateProposalItems } from "@/app/actions/ai-proposal"
 import { saveProposal } from "@/app/actions/proposals"
 import { getServices, Service } from "@/app/actions/services"
 import { getBundles } from "@/app/actions/bundles"
-import { ProposalDocument } from "@/components/modules/proposals/proposal-document"
 import { SnippetBank } from "@/components/modules/proposals/snippet-bank"
 
 const proposalSchema = z.object({
@@ -412,37 +411,10 @@ export default function CreateProposalPage() {
                             Taslak Kaydet
                         </Button>
 
-                        {/* PDF Download Button - Calls API */}
-                        {previewData && (
-                            <Button
-                                disabled={saving}
-                                onClick={async () => {
-                                    try {
-                                        const response = await fetch('/api/generate-pdf', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(previewData),
-                                        });
-
-                                        if (response.ok) {
-                                            const blob = await response.blob();
-                                            const url = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = `Teklif-${previewData.projectTitle}.pdf`;
-                                            a.click();
-                                            window.URL.revokeObjectURL(url);
-                                            await handleSave('sent');
-                                        }
-                                    } catch (error) {
-                                        console.error('PDF download failed:', error);
-                                    }
-                                }}
-                            >
-                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                Kaydet ve İndir
-                            </Button>
-                        )}
+                        <Button onClick={() => handleSave('sent')} disabled={saving}>
+                            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                            Kaydet ve Gönder
+                        </Button>
                     </div>
                 </div>
 
