@@ -9,8 +9,10 @@ export async function POST(request: NextRequest) {
         // Render PDF to buffer on the server
         const pdfBuffer = await renderToBuffer(<ProposalDocument data={data} />);
 
+        // Convert Buffer to Uint8Array for proper type compatibility
+        const pdfBytes = Uint8Array.from(pdfBuffer);
         // Convert Buffer to Blob for NextResponse
-        const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
 
         // Return PDF as downloadable file
         return new NextResponse(pdfBlob, {
