@@ -85,9 +85,12 @@ export async function generateDashboardSummary(): Promise<SummaryPoint[]> {
 
     if (activeProposals && activeProposals.length > 0 && (activeProposals[0].total_amount || 0) > 20000) {
         const topProp = activeProposals[0];
+        // @ts-ignore
+        const customerName = Array.isArray(topProp.customers) ? topProp.customers[0]?.name : topProp.customers?.name;
+
         points.push({
             id: 2,
-            text: `Fırsat: ${topProp.customers?.name} teklifi (${Math.round((topProp.total_amount || 0) / 1000)}k) onay bekliyor.`,
+            text: `Fırsat: ${customerName || 'Müşteri'} teklifi (${Math.round((topProp.total_amount || 0) / 1000)}k) onay bekliyor.`,
             status: "info",
         });
     } else if (pendingTotal > 0) {
