@@ -5,7 +5,6 @@ import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Plus, Trash2, Wand2, Loader2, Save, Download } from "lucide-react"
-import { PDFViewer, PDFDownloadLink } from "@/components/ui/pdf-shim"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -413,29 +412,75 @@ export default function CreateProposalPage() {
                             Taslak Kaydet
                         </Button>
 
-                        {/* PDF Download Button - Only active if valid */}
+                        {/* PDF Download Button - Calls API */}
                         {previewData && (
-                            <PDFDownloadLink
-                                document={<ProposalDocument data={previewData} />}
-                                fileName={`Teklif-${previewData.projectTitle}.pdf`}
+                            <Button
+                                disabled={saving}
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch('/api/generate-pdf', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(previewData),
+                                        });
+
+                                        if (response.ok) {
+                                            const blob = await response.blob();
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `Teklif-${previewData.projectTitle}.pdf`;
+                                            a.click();
+                                            window.URL.revokeObjectURL(url);
+                                            await handleSave('sent');
+                                        }
+                                    } catch (error) {
+                                        console.error('PDF download failed:', error);
+                                    }
+                                }}
                             >
-                                {/* @ts-ignore - PDFDownloadLink children type issue */}
-                                {({ loading: pdfLoading }) => (
-                                    <Button disabled={pdfLoading || saving} onClick={() => handleSave('sent')}>
-                                        {pdfLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                        Kaydet ve İndir
-                                    </Button>
-                                )}
-                            </PDFDownloadLink>
+                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                Kaydet ve İndir
+                            </Button>
                         )}
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden rounded-lg border bg-muted/20">
+                <div className="flex-1 overflow-auto rounded-lg border bg-card p-6">
                     {previewData ? (
-                        <PDFViewer className="h-full w-full" showToolbar={true}>
-                            <ProposalDocument data={previewData} />
-                        </PDFViewer>
+                        <div className="space-y-4">
+                            <div className="border-b pb-4">
+                                <h3 className="text-2xl font-bold">{previewData.projectTitle}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {previewData.customerName} • {previewData.companyName}
+                                </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">Hizmet Kalemleri</h4>
+                                {previewData.items.map((item: any, idx: number) => (
+                                    <div key={idx} className="flex justify-between text-sm border-b pb-2">
+                                        <span>{item.description}</span>
+                                        <span className="font-medium">{item.total.toLocaleString('tr-TR')} TL</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="border-t pt-4 space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span>Ara Toplam:</span>
+                                    <span>{previewData.subtotal.toLocaleString('tr-TR')} TL</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span>KDV (%20):</span>
+                                    <span>{previewData.tax.toLocaleString('tr-TR')} TL</span>
+                                </div>
+                                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                                    <span>Toplam:</span>
+                                    <span>{previewData.total.toLocaleString('tr-TR')} TL</span>
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div className="flex h-full items-center justify-center text-muted-foreground">
                             Önizleme için formu doldurun...

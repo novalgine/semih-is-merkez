@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 import withPWA from '@ducanh2912/next-pwa';
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@react-pdf/renderer'],
   experimental: {
     serverComponentsExternalPackages: ['@react-pdf/renderer'],
   },
