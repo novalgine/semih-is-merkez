@@ -5,8 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Plus, Trash2, Wand2, Loader2, Save, Download } from "lucide-react"
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer"
-import dynamic from "next/dynamic"
+import { PDFViewer, PDFDownloadLink } from "@/components/ui/pdf-shim"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -34,15 +33,6 @@ import { getServices, Service } from "@/app/actions/services"
 import { getBundles } from "@/app/actions/bundles"
 import { ProposalDocument } from "@/components/modules/proposals/proposal-document"
 import { SnippetBank } from "@/components/modules/proposals/snippet-bank"
-
-// Dynamic import for PDF Viewer to avoid SSR issues
-const PDFViewerComponent = dynamic(
-    () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
-    {
-        ssr: false,
-        loading: () => <div className="flex h-[600px] items-center justify-center border rounded-md bg-muted/10"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>,
-    }
-);
 
 const proposalSchema = z.object({
     customerId: z.string().min(1, "Müşteri seçiniz"),
@@ -443,9 +433,9 @@ export default function CreateProposalPage() {
 
                 <div className="flex-1 overflow-hidden rounded-lg border bg-muted/20">
                     {previewData ? (
-                        <PDFViewerComponent className="h-full w-full" showToolbar={true}>
+                        <PDFViewer className="h-full w-full" showToolbar={true}>
                             <ProposalDocument data={previewData} />
-                        </PDFViewerComponent>
+                        </PDFViewer>
                     ) : (
                         <div className="flex h-full items-center justify-center text-muted-foreground">
                             Önizleme için formu doldurun...

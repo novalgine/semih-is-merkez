@@ -2,13 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
-import dynamic from "next/dynamic"
+import { PDFDownloadLink } from "@/components/ui/pdf-shim"
 import { ProposalDocument } from "./proposal-document"
-
-const PDFDownloadLink = dynamic(
-    () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-    { ssr: false }
-)
 
 interface PDFDownloadButtonProps {
     data: any
