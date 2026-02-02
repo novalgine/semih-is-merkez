@@ -144,7 +144,9 @@ export async function POST(request: NextRequest) {
                     executionResult = await createTask(
                         params.content,
                         params.date,
-                        params.category || 'Sesli Not'
+                        params.category || 'Sesli Not',
+                        params.priority || 'medium',
+                        params.description
                     ) as any;
                     break;
 
@@ -167,14 +169,14 @@ export async function POST(request: NextRequest) {
 
                 case "GENERAL_LOG":
                 default:
-                    const { error: logError } = await supabase
-                        .from('daily_logs')
-                        .insert({
-                            content: params.content || rawText,
-                            category: params.category || 'Genel',
-                            sentiment: 'Neutral'
-                        });
-                    executionResult = { success: !logError, error: logError?.message || "" };
+                    // Redirect to tasks instead of missing daily_logs table
+                    executionResult = await createTask(
+                        params.content || rawText,
+                        null, // no specific date
+                        params.category || 'Sesli Not',
+                        'medium',
+                        undefined
+                    ) as any;
                     break;
             }
         } catch (err: any) {
