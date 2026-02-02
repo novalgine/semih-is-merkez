@@ -10,6 +10,8 @@ export interface Task {
     is_completed: boolean
     assigned_date: string | null // YYYY-MM-DD string or null
     category: string | null
+    priority: 'low' | 'medium' | 'high'
+    description: string | null
     position: number
     created_at: string
 }
