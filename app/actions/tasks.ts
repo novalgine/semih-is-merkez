@@ -36,7 +36,7 @@ export async function getTasks(startDate: Date, endDate: Date) {
     return data as Task[]
 }
 
-export async function createTask(content: string, assignedDate?: string | null, category?: string | null) {
+export async function createTask(content: string, assignedDate?: string | null, category?: string | null, priority: 'low' | 'medium' | 'high' = 'medium', description?: string) {
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -45,6 +45,8 @@ export async function createTask(content: string, assignedDate?: string | null, 
             content,
             assigned_date: assignedDate || null,
             category: category || null,
+            priority: priority,
+            description: description || null,
             is_completed: false
         })
         .select()
