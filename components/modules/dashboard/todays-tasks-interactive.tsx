@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mic, Plus, Loader2 } from "lucide-react";
 import { updateTask, createTask } from "@/app/actions/tasks";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Task } from "@/app/actions/tasks";
 import { cn } from "@/lib/utils";
 import { VoiceNoteInline } from "./voice-note-inline";
@@ -28,7 +28,6 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
     const [isAdding, setIsAdding] = useState(false);
     const [showVoiceNote, setShowVoiceNote] = useState(false);
     const router = useRouter();
-    const { toast } = useToast();
 
     const completedCount = tasks.filter(t => t.is_completed).length;
 
@@ -48,11 +47,7 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
         } catch (error) {
             // Revert on error
             setTasks(tasks);
-            toast({
-                title: "Hata",
-                description: "Güncelleme başarısız",
-                variant: "destructive"
-            });
+            toast.error("Güncelleme başarısız");
         }
     };
 
@@ -73,14 +68,12 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
             if (result.success) {
                 setNewTaskContent("");
                 router.refresh();
-                toast({ title: "Görev eklendi!" });
+                toast.success("Görev eklendi!");
+            } else {
+                toast.error("Görev eklenemedi");
             }
         } catch (error) {
-            toast({
-                title: "Hata",
-                description: "Görev eklenemedi",
-                variant: "destructive"
-            });
+            toast.error("Bir hata oluştu");
         } finally {
             setIsAdding(false);
         }
@@ -175,10 +168,11 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
                 </div>
 
                 {showVoiceNote && (
-                    <div className="mt-4 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                        <p className="text-xs text-muted-foreground text-center">
-                            Sesli not özelliği burada gösterilecek
-                        </p>
+                    <div className="mt-4">
+                        <VoiceNoteInline onComplete={() => {
+                            setShowVoiceNote(false);
+                            router.refresh();
+                        }} />
                     </div>
                 )}
             </div>
