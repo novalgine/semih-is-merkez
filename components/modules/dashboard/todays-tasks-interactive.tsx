@@ -65,9 +65,10 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
                 undefined
             );
 
-            if (result.success) {
+            if (result.success && result.task) {
+                // Optimistic update - add task immediately to UI
+                setTasks([...tasks, result.task]);
                 setNewTaskContent("");
-                router.refresh();
                 toast.success("Görev eklendi!");
             } else {
                 toast.error("Görev eklenemedi");
