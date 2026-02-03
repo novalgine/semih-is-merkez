@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useOptimistic } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Trash2, Check, X, TrendingUp, TrendingDown, Wallet, Loader2 } from "lucide-react";
+import { Plus, Trash2, Check, X, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -56,11 +56,7 @@ export function FinanceTable({
 }: FinanceTableProps) {
     const router = useRouter();
     const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
-    const [search, setSearch] = useState('');
     const [isAdding, setIsAdding] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-
-    // Local state for instant updates
     const [localTransactions, setLocalTransactions] = useState(initialTransactions);
 
     const [newRow, setNewRow] = useState({
@@ -82,12 +78,10 @@ export function FinanceTable({
 
     const filteredTransactions = localTransactions.filter(t => {
         if (filter !== 'all' && t.type !== filter) return false;
-        if (search && !t.description.toLowerCase().includes(search.toLowerCase()) && !t.category.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
     const handleAdd = async () => {
-        // Validation
         if (!newRow.amount || parseFloat(newRow.amount) <= 0) {
             toast.error("Tutar girin");
             return;
@@ -101,7 +95,6 @@ export function FinanceTable({
             return;
         }
 
-        // Create temp ID for optimistic update
         const tempId = `temp-${Date.now()}`;
         const newTransaction: Transaction = {
             id: tempId,
@@ -112,10 +105,7 @@ export function FinanceTable({
             description: newRow.description
         };
 
-        // INSTANT: Add to local state immediately
         setLocalTransactions(prev => [newTransaction, ...prev]);
-
-        // Reset form immediately
         setNewRow({
             type: 'expense',
             amount: '',
@@ -124,11 +114,8 @@ export function FinanceTable({
             description: ''
         });
         setIsAdding(false);
-
-        // Show instant feedback
         toast.success(newRow.type === 'income' ? "✓ Gelir eklendi" : "✓ Gider eklendi");
 
-        // Background: Save to database
         try {
             const result = await addTransaction({
                 type: newTransaction.type,
@@ -139,39 +126,32 @@ export function FinanceTable({
             });
 
             if (!result.success) {
-                // Rollback on error
                 setLocalTransactions(prev => prev.filter(t => t.id !== tempId));
                 console.error('Transaction failed:', result.error);
                 toast.error("Kayıt başarısız: " + (result.error || "Bilinmeyen hata"), { duration: 5000 });
             } else {
-                // Refresh to get real ID
                 router.refresh();
             }
         } catch (err) {
-            // Rollback on error
             setLocalTransactions(prev => prev.filter(t => t.id !== tempId));
             toast.error("Bağlantı hatası");
         }
     };
 
     const handleDelete = async (id: string, type: 'income' | 'expense') => {
-        // Don't try to delete temp items from DB
         if (id.startsWith('temp-')) {
             setLocalTransactions(prev => prev.filter(t => t.id !== id));
             toast.success("✓ Silindi");
             return;
         }
 
-        // INSTANT: Remove from local state
         const deletedTx = localTransactions.find(t => t.id === id);
         setLocalTransactions(prev => prev.filter(t => t.id !== id));
         toast.success("✓ Silindi");
 
-        // Background: Delete from database
         try {
             const result = await deleteTransaction(id, type);
             if (!result.success && deletedTx) {
-                // Rollback
                 setLocalTransactions(prev => [...prev, deletedTx]);
                 toast.error("Silme başarısız");
             } else {
@@ -186,55 +166,55 @@ export function FinanceTable({
     };
 
     return (
-        <div className="space-y-6">
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/[0.08] rounded-2xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center">
-                            <Wallet className="h-4 w-4 text-white/60" />
+        <div className="space-y-4">
+            {/* Stats - Mobile: Stacked, Desktop: Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/[0.08] rounded-xl p-4">
+                    <div className="flex items-center justify-between sm:flex-col sm:items-start sm:gap-2">
+                        <div className="flex items-center gap-2">
+                            <Wallet className="h-4 w-4 text-white/40" />
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Net</span>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Net Varlık</span>
+                        <p className={cn(
+                            "text-xl sm:text-2xl font-bold tabular-nums",
+                            netWealth >= 0 ? "text-white" : "text-red-400"
+                        )}>{formatCurrency(netWealth)}</p>
                     </div>
-                    <p className={cn(
-                        "text-2xl font-bold tabular-nums",
-                        netWealth >= 0 ? "text-white" : "text-red-400"
-                    )}>{formatCurrency(netWealth)}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-950/50 to-zinc-950 border border-emerald-500/10 rounded-2xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <div className="bg-gradient-to-br from-emerald-950/50 to-zinc-950 border border-emerald-500/10 rounded-xl p-4">
+                    <div className="flex items-center justify-between sm:flex-col sm:items-start sm:gap-2">
+                        <div className="flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-emerald-500" />
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Gelir</span>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Toplam Gelir</span>
+                        <p className="text-xl sm:text-2xl font-bold tabular-nums text-emerald-400">{formatCurrency(totalIncome)}</p>
                     </div>
-                    <p className="text-2xl font-bold tabular-nums text-emerald-400">{formatCurrency(totalIncome)}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-950/50 to-zinc-950 border border-red-500/10 rounded-2xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <div className="bg-gradient-to-br from-red-950/50 to-zinc-950 border border-red-500/10 rounded-xl p-4">
+                    <div className="flex items-center justify-between sm:flex-col sm:items-start sm:gap-2">
+                        <div className="flex items-center gap-2">
                             <TrendingDown className="h-4 w-4 text-red-500" />
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase">Gider</span>
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Toplam Gider</span>
+                        <p className="text-xl sm:text-2xl font-bold tabular-nums text-red-400">{formatCurrency(totalExpense)}</p>
                     </div>
-                    <p className="text-2xl font-bold tabular-nums text-red-400">{formatCurrency(totalExpense)}</p>
                 </div>
             </div>
 
-            {/* Filters & Search */}
-            <div className="flex items-center gap-3">
-                <div className="flex bg-white/[0.03] border border-white/[0.08] rounded-xl p-1">
+            {/* Filters + Add Button */}
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
                     {(['all', 'income', 'expense'] as const).map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
                             className={cn(
-                                "px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all",
+                                "px-3 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all",
                                 filter === f
                                     ? "bg-white/10 text-white"
-                                    : "text-zinc-500 hover:text-white"
+                                    : "text-zinc-500"
                             )}
                         >
                             {f === 'all' ? 'Tümü' : f === 'income' ? 'Gelir' : 'Gider'}
@@ -242,186 +222,172 @@ export function FinanceTable({
                     ))}
                 </div>
 
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
-                        placeholder="Ara..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10 bg-white/[0.03] border-white/[0.08] h-10"
-                    />
-                </div>
-
                 <Button
                     onClick={() => setIsAdding(true)}
-                    className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-4 gap-2"
+                    size="sm"
+                    className="bg-amber-600 hover:bg-amber-700 text-white gap-1 h-8"
                 >
                     <Plus className="h-4 w-4" />
-                    Yeni
+                    <span className="hidden sm:inline">Yeni</span>
                 </Button>
             </div>
 
-            {/* Table */}
-            <div className="bg-zinc-900/50 border border-white/[0.08] rounded-2xl overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-white/[0.05]">
-                            <th className="text-left text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-4 py-3">Tarih</th>
-                            <th className="text-left text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-4 py-3">Açıklama</th>
-                            <th className="text-left text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-4 py-3">Kategori</th>
-                            <th className="text-right text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-4 py-3">Tutar</th>
-                            <th className="w-10"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <AnimatePresence>
-                            {/* New Row Input */}
-                            {isAdding && (
-                                <motion.tr
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="border-b border-amber-500/20 bg-amber-500/5"
-                                >
-                                    <td className="px-4 py-2">
-                                        <Input
-                                            type="date"
-                                            value={newRow.date}
-                                            onChange={(e) => setNewRow({ ...newRow, date: e.target.value })}
-                                            className="bg-transparent border-white/10 h-8 text-sm w-32"
-                                        />
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <Input
-                                            placeholder="Açıklama..."
-                                            value={newRow.description}
-                                            onChange={(e) => setNewRow({ ...newRow, description: e.target.value })}
-                                            className="bg-transparent border-white/10 h-8 text-sm"
-                                            autoFocus
-                                        />
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={newRow.type}
-                                                onChange={(e) => setNewRow({ ...newRow, type: e.target.value as any, category: '' })}
-                                                className="bg-zinc-800 border border-white/10 rounded-md h-8 text-xs px-2"
-                                            >
-                                                <option value="expense">Gider</option>
-                                                <option value="income">Gelir</option>
-                                            </select>
-                                            <select
-                                                value={newRow.category}
-                                                onChange={(e) => setNewRow({ ...newRow, category: e.target.value })}
-                                                className="bg-zinc-800 border border-white/10 rounded-md h-8 text-xs px-2 flex-1"
-                                            >
-                                                <option value="">Kategori...</option>
-                                                {CATEGORIES[newRow.type].map(cat => (
-                                                    <option key={cat} value={cat}>{cat}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <Input
-                                            type="number"
-                                            placeholder="0"
-                                            value={newRow.amount}
-                                            onChange={(e) => setNewRow({ ...newRow, amount: e.target.value })}
-                                            className="bg-transparent border-white/10 h-8 text-sm text-right w-24 ml-auto"
-                                        />
-                                    </td>
-                                    <td className="px-2 py-2">
-                                        <div className="flex gap-1">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-7 w-7 text-emerald-500 hover:bg-emerald-500/10"
-                                                onClick={handleAdd}
-                                            >
-                                                <Check className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-7 w-7 text-zinc-500 hover:bg-zinc-500/10"
-                                                onClick={() => setIsAdding(false)}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </motion.tr>
-                            )}
-
-                            {/* Data Rows */}
-                            {filteredTransactions.map((tx, i) => (
-                                <motion.tr
-                                    key={tx.id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.15 }}
-                                    className={cn(
-                                        "border-b border-white/[0.03] hover:bg-white/[0.02] group transition-colors",
-                                        tx.id.startsWith('temp-') && "opacity-70"
-                                    )}
-                                >
-                                    <td className="px-4 py-3 text-sm text-zinc-400 tabular-nums">
-                                        {format(new Date(tx.date), 'd MMM', { locale: tr })}
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-white font-medium">
-                                        {tx.description}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span className={cn(
-                                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                                            CATEGORY_COLORS[tx.category] || CATEGORY_COLORS['Diğer']
-                                        )}>
-                                            {tx.category}
-                                        </span>
-                                    </td>
-                                    <td className={cn(
-                                        "px-4 py-3 text-sm font-bold tabular-nums text-right",
-                                        tx.type === 'income' ? "text-emerald-400" : "text-red-400"
-                                    )}>
-                                        {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
-                                    </td>
-                                    <td className="px-2 py-3">
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-7 w-7 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => handleDelete(tx.id, tx.type)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </td>
-                                </motion.tr>
-                            ))}
-                        </AnimatePresence>
-
-                        {filteredTransactions.length === 0 && !isAdding && (
-                            <tr>
-                                <td colSpan={5} className="px-4 py-12 text-center text-zinc-600 italic">
-                                    {search ? 'Sonuç bulunamadı' : 'Henüz işlem yok'}
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-
-                {/* Quick Add Row */}
-                {!isAdding && (
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="w-full px-4 py-3 text-left text-sm text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02] transition-colors flex items-center gap-2 border-t border-white/[0.03]"
+            {/* Add Form - Mobile Friendly */}
+            <AnimatePresence>
+                {isAdding && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3"
                     >
-                        <Plus className="h-4 w-4" />
-                        Yeni satır ekle...
-                    </button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 block">Tip</label>
+                                <select
+                                    value={newRow.type}
+                                    onChange={(e) => setNewRow({ ...newRow, type: e.target.value as any, category: '' })}
+                                    className="w-full bg-zinc-800 border border-white/10 rounded-lg h-10 text-sm px-3"
+                                >
+                                    <option value="expense">Gider</option>
+                                    <option value="income">Gelir</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 block">Kategori</label>
+                                <select
+                                    value={newRow.category}
+                                    onChange={(e) => setNewRow({ ...newRow, category: e.target.value })}
+                                    className="w-full bg-zinc-800 border border-white/10 rounded-lg h-10 text-sm px-3"
+                                >
+                                    <option value="">Seçin...</option>
+                                    {CATEGORIES[newRow.type].map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 block">Açıklama</label>
+                            <Input
+                                placeholder="Ne için?"
+                                value={newRow.description}
+                                onChange={(e) => setNewRow({ ...newRow, description: e.target.value })}
+                                className="bg-zinc-800 border-white/10 h-10"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 block">Tarih</label>
+                                <Input
+                                    type="date"
+                                    value={newRow.date}
+                                    onChange={(e) => setNewRow({ ...newRow, date: e.target.value })}
+                                    className="bg-zinc-800 border-white/10 h-10"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 block">Tutar (₺)</label>
+                                <Input
+                                    type="number"
+                                    placeholder="0"
+                                    value={newRow.amount}
+                                    onChange={(e) => setNewRow({ ...newRow, amount: e.target.value })}
+                                    className="bg-zinc-800 border-white/10 h-10 text-right font-bold"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                            <Button
+                                variant="ghost"
+                                className="flex-1 text-zinc-500"
+                                onClick={() => setIsAdding(false)}
+                            >
+                                İptal
+                            </Button>
+                            <Button
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                                onClick={handleAdd}
+                            >
+                                <Check className="h-4 w-4 mr-1" />
+                                Kaydet
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Transaction List - Card Style for Mobile */}
+            <div className="space-y-2">
+                <AnimatePresence>
+                    {filteredTransactions.map((tx) => (
+                        <motion.div
+                            key={tx.id}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: -100 }}
+                            className={cn(
+                                "bg-zinc-900/50 border border-white/[0.05] rounded-xl p-3 flex items-center gap-3",
+                                tx.id.startsWith('temp-') && "opacity-60"
+                            )}
+                        >
+                            {/* Left: Date & Description */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-white font-medium truncate">{tx.description}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] text-zinc-500">
+                                        {format(new Date(tx.date), 'd MMM', { locale: tr })}
+                                    </span>
+                                    <span className={cn(
+                                        "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase border",
+                                        CATEGORY_COLORS[tx.category] || CATEGORY_COLORS['Diğer']
+                                    )}>
+                                        {tx.category}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Right: Amount & Delete */}
+                            <div className="flex items-center gap-2">
+                                <p className={cn(
+                                    "text-base font-bold tabular-nums whitespace-nowrap",
+                                    tx.type === 'income' ? "text-emerald-400" : "text-red-400"
+                                )}>
+                                    {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                </p>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 shrink-0"
+                                    onClick={() => handleDelete(tx.id, tx.type)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+
+                {filteredTransactions.length === 0 && !isAdding && (
+                    <div className="text-center py-12 text-zinc-600 italic">
+                        Henüz işlem yok
+                    </div>
                 )}
             </div>
+
+            {/* Quick Add Button */}
+            {!isAdding && (
+                <button
+                    onClick={() => setIsAdding(true)}
+                    className="w-full py-3 text-sm text-zinc-600 hover:text-zinc-400 transition-colors flex items-center justify-center gap-2 border border-dashed border-white/10 rounded-xl"
+                >
+                    <Plus className="h-4 w-4" />
+                    Yeni işlem ekle
+                </button>
+            )}
         </div>
     );
 }
