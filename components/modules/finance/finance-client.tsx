@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { InteractiveCard } from "@/components/ui/interactive-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuickActionTemplates } from "./quick-action-templates";
+import { AddTransactionDialog } from "./add-transaction-dialog";
+import { AddTemplateDialog } from "./add-template-dialog";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -78,14 +80,11 @@ export function FinanceClient({
                     <p className="text-muted-foreground mt-1">Geleceği planla, geçmişi analiz et.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" className="gap-2" onClick={() => toast.info("Raporlama özelliği yakında eklenecek.")}>
                         <BarChart3 className="h-4 w-4" />
                         Rapor Al
                     </Button>
-                    <Button className="bg-amber-600 hover:bg-amber-700 text-white gap-2">
-                        <Plus className="h-4 w-4" />
-                        Yeni Veri
-                    </Button>
+                    <AddTransactionDialog />
                 </div>
             </div>
 
@@ -280,10 +279,7 @@ export function FinanceClient({
                                         </Button>
                                     </div>
                                 ))}
-                                <Button variant="outline" className="w-full border-dashed border-white/10 hover:border-white/20 h-16 rounded-xl gap-2 font-bold text-zinc-500">
-                                    <Plus className="h-4 w-4" />
-                                    Yeni Gider Şablonu
-                                </Button>
+                                <AddTemplateDialog type="expense" />
                             </div>
                         </div>
 
@@ -307,10 +303,7 @@ export function FinanceClient({
                                         </Button>
                                     </div>
                                 ))}
-                                <Button variant="outline" className="w-full border-dashed border-white/10 hover:border-white/20 h-16 rounded-xl gap-2 font-bold text-zinc-500">
-                                    <Plus className="h-4 w-4" />
-                                    Yeni Gelir Şablonu
-                                </Button>
+                                <AddTemplateDialog type="income" />
                             </div>
                         </div>
                     </div>
