@@ -87,8 +87,17 @@ export function FinanceTable({
     });
 
     const handleAdd = async () => {
-        if (!newRow.amount || !newRow.category || !newRow.description) {
-            toast.error("Tüm alanları doldurun");
+        // Validation
+        if (!newRow.amount || parseFloat(newRow.amount) <= 0) {
+            toast.error("Tutar girin");
+            return;
+        }
+        if (!newRow.category) {
+            toast.error("Kategori seçin");
+            return;
+        }
+        if (!newRow.description || newRow.description.trim() === '') {
+            toast.error("Açıklama girin");
             return;
         }
 
@@ -145,6 +154,13 @@ export function FinanceTable({
     };
 
     const handleDelete = async (id: string, type: 'income' | 'expense') => {
+        // Don't try to delete temp items from DB
+        if (id.startsWith('temp-')) {
+            setLocalTransactions(prev => prev.filter(t => t.id !== id));
+            toast.success("✓ Silindi");
+            return;
+        }
+
         // INSTANT: Remove from local state
         const deletedTx = localTransactions.find(t => t.id === id);
         setLocalTransactions(prev => prev.filter(t => t.id !== id));
