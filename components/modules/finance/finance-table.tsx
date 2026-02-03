@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useOptimistic } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Trash2, Check, X, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { Plus, Search, Trash2, Check, X, TrendingUp, TrendingDown, Wallet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -49,16 +49,20 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function FinanceTable({
-    transactions,
+    transactions: initialTransactions,
     netWealth,
     totalIncome,
     totalExpense
 }: FinanceTableProps) {
     const router = useRouter();
-    const [isPending, startTransition] = useTransition();
     const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
     const [search, setSearch] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Local state for instant updates
+    const [localTransactions, setLocalTransactions] = useState(initialTransactions);
+
     const [newRow, setNewRow] = useState({
         type: 'expense' as 'income' | 'expense',
         amount: '',
@@ -76,7 +80,7 @@ export function FinanceTable({
         }).format(amount);
     };
 
-    const filteredTransactions = transactions.filter(t => {
+    const filteredTransactions = localTransactions.filter(t => {
         if (filter !== 'all' && t.type !== filter) return false;
         if (search && !t.description.toLowerCase().includes(search.toLowerCase()) && !t.category.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
@@ -88,35 +92,79 @@ export function FinanceTable({
             return;
         }
 
-        const result = await addTransaction({
+        // Create temp ID for optimistic update
+        const tempId = `temp-${Date.now()}`;
+        const newTransaction: Transaction = {
+            id: tempId,
             type: newRow.type,
             amount: parseFloat(newRow.amount),
             date: newRow.date,
             category: newRow.category,
             description: newRow.description
-        });
+        };
 
-        if (result.success) {
-            toast.success(newRow.type === 'income' ? "Gelir eklendi" : "Gider eklendi");
-            setNewRow({
-                type: 'expense',
-                amount: '',
-                date: new Date().toISOString().split('T')[0],
-                category: '',
-                description: ''
+        // INSTANT: Add to local state immediately
+        setLocalTransactions(prev => [newTransaction, ...prev]);
+
+        // Reset form immediately
+        setNewRow({
+            type: 'expense',
+            amount: '',
+            date: new Date().toISOString().split('T')[0],
+            category: '',
+            description: ''
+        });
+        setIsAdding(false);
+
+        // Show instant feedback
+        toast.success(newRow.type === 'income' ? "✓ Gelir eklendi" : "✓ Gider eklendi");
+
+        // Background: Save to database
+        try {
+            const result = await addTransaction({
+                type: newTransaction.type,
+                amount: newTransaction.amount,
+                date: newTransaction.date,
+                category: newTransaction.category,
+                description: newTransaction.description
             });
-            setIsAdding(false);
-            startTransition(() => router.refresh());
-        } else {
-            toast.error("Eklenemedi");
+
+            if (!result.success) {
+                // Rollback on error
+                setLocalTransactions(prev => prev.filter(t => t.id !== tempId));
+                toast.error("Kayıt başarısız: " + (result.error || "Bilinmeyen hata"));
+            } else {
+                // Refresh to get real ID
+                router.refresh();
+            }
+        } catch (err) {
+            // Rollback on error
+            setLocalTransactions(prev => prev.filter(t => t.id !== tempId));
+            toast.error("Bağlantı hatası");
         }
     };
 
     const handleDelete = async (id: string, type: 'income' | 'expense') => {
-        const result = await deleteTransaction(id, type);
-        if (result.success) {
-            toast.success("Silindi");
-            startTransition(() => router.refresh());
+        // INSTANT: Remove from local state
+        const deletedTx = localTransactions.find(t => t.id === id);
+        setLocalTransactions(prev => prev.filter(t => t.id !== id));
+        toast.success("✓ Silindi");
+
+        // Background: Delete from database
+        try {
+            const result = await deleteTransaction(id, type);
+            if (!result.success && deletedTx) {
+                // Rollback
+                setLocalTransactions(prev => [...prev, deletedTx]);
+                toast.error("Silme başarısız");
+            } else {
+                router.refresh();
+            }
+        } catch {
+            if (deletedTx) {
+                setLocalTransactions(prev => [...prev, deletedTx]);
+                toast.error("Bağlantı hatası");
+            }
         }
     };
 
@@ -232,6 +280,7 @@ export function FinanceTable({
                                             value={newRow.description}
                                             onChange={(e) => setNewRow({ ...newRow, description: e.target.value })}
                                             className="bg-transparent border-white/10 h-8 text-sm"
+                                            autoFocus
                                         />
                                     </td>
                                     <td className="px-4 py-2">
@@ -267,10 +316,20 @@ export function FinanceTable({
                                     </td>
                                     <td className="px-2 py-2">
                                         <div className="flex gap-1">
-                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-500 hover:bg-emerald-500/10" onClick={handleAdd}>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7 text-emerald-500 hover:bg-emerald-500/10"
+                                                onClick={handleAdd}
+                                            >
                                                 <Check className="h-4 w-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-zinc-500 hover:bg-zinc-500/10" onClick={() => setIsAdding(false)}>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7 text-zinc-500 hover:bg-zinc-500/10"
+                                                onClick={() => setIsAdding(false)}
+                                            >
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -284,8 +343,12 @@ export function FinanceTable({
                                     key={tx.id}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    transition={{ delay: i * 0.03 }}
-                                    className="border-b border-white/[0.03] hover:bg-white/[0.02] group transition-colors"
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.15 }}
+                                    className={cn(
+                                        "border-b border-white/[0.03] hover:bg-white/[0.02] group transition-colors",
+                                        tx.id.startsWith('temp-') && "opacity-70"
+                                    )}
                                 >
                                     <td className="px-4 py-3 text-sm text-zinc-400 tabular-nums">
                                         {format(new Date(tx.date), 'd MMM', { locale: tr })}
