@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { addTransaction, deleteTransaction } from "@/app/actions/finance-simple";
 
 interface Transaction {
     id: string;
@@ -25,8 +26,6 @@ interface FinanceTableProps {
     netWealth: number;
     totalIncome: number;
     totalExpense: number;
-    onAdd: (data: Omit<Transaction, 'id'>) => Promise<{ success: boolean }>;
-    onDelete: (id: string) => Promise<{ success: boolean }>;
 }
 
 const CATEGORIES = {
@@ -53,9 +52,7 @@ export function FinanceTable({
     transactions,
     netWealth,
     totalIncome,
-    totalExpense,
-    onAdd,
-    onDelete
+    totalExpense
 }: FinanceTableProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -91,7 +88,7 @@ export function FinanceTable({
             return;
         }
 
-        const result = await onAdd({
+        const result = await addTransaction({
             type: newRow.type,
             amount: parseFloat(newRow.amount),
             date: newRow.date,
@@ -115,8 +112,8 @@ export function FinanceTable({
         }
     };
 
-    const handleDelete = async (id: string) => {
-        const result = await onDelete(id);
+    const handleDelete = async (id: string, type: 'income' | 'expense') => {
+        const result = await deleteTransaction(id, type);
         if (result.success) {
             toast.success("Silindi");
             startTransition(() => router.refresh());
@@ -315,7 +312,7 @@ export function FinanceTable({
                                             size="icon"
                                             variant="ghost"
                                             className="h-7 w-7 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => handleDelete(tx.id)}
+                                            onClick={() => handleDelete(tx.id, tx.type)}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
