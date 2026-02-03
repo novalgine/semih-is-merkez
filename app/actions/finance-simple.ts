@@ -15,18 +15,25 @@ interface TransactionData {
 export async function addTransaction(data: TransactionData) {
     const supabase = await createClient()
 
+    console.log('Adding transaction:', data)
+
     if (data.type === 'expense') {
-        const { error } = await supabase.from('expenses').insert({
+        const insertData = {
             amount: data.amount,
             category: data.category,
             description: data.description,
             date: data.date,
-        })
+        }
+        console.log('Inserting expense:', insertData)
+
+        const { data: result, error } = await supabase.from('expenses').insert(insertData).select()
 
         if (error) {
             console.error('Add Expense Error:', error)
             return { success: false, error: error.message }
         }
+        console.log('Expense inserted:', result)
+
     } else {
         const { error } = await supabase.from('incomes').insert({
             amount: data.amount,

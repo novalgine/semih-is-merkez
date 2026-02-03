@@ -141,7 +141,8 @@ export function FinanceTable({
             if (!result.success) {
                 // Rollback on error
                 setLocalTransactions(prev => prev.filter(t => t.id !== tempId));
-                toast.error("Kayıt başarısız: " + (result.error || "Bilinmeyen hata"));
+                console.error('Transaction failed:', result.error);
+                toast.error("Kayıt başarısız: " + (result.error || "Bilinmeyen hata"), { duration: 5000 });
             } else {
                 // Refresh to get real ID
                 router.refresh();
