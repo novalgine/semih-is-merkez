@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": ".smoke-dist",
+    "rootDir": ".",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "tests/smoke/**/*.ts",
+    "app/actions/tasks-core.ts",
+    "app/actions/ai-proposal.ts",
+    "components/modules/dashboard/daily-command-center-data.ts"
+  ]
+}

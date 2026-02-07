@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:smoke": "rm -rf .smoke-dist && tsc -p tsconfig.smoke.json && node --test .smoke-dist/tests/smoke/*.test.js",
+    "ci:smoke": "npm run test:smoke"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
