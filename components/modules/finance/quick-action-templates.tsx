@@ -34,24 +34,26 @@ export function QuickActionTemplates({ expenseTemplates, incomeTemplates }: Quic
             const today = new Date().toISOString().split('T')[0];
 
             if (type === 'expense') {
-                await createExpense({
+                const result = await createExpense({
                     description: template.name,
                     amount: template.default_amount,
                     category: template.category,
                     date: today
                 });
+                if (!result.success) throw new Error(result.error || 'Gider eklenemedi');
                 toast.success(`${template.name} gideri eklendi.`);
             } else {
-                await addIncome({
+                const result = await addIncome({
                     description: template.name,
                     amount: template.default_amount,
                     category: template.category,
                     date: today
                 });
+                if (!result.success) throw new Error(result.error || 'Gelir eklenemedi');
                 toast.success(`${template.name} geliri eklendi.`);
             }
             router.refresh();
-        } catch (error) {
+        } catch {
             toast.error("İşlem başarısız.");
         } finally {
             setLoadingId(null);

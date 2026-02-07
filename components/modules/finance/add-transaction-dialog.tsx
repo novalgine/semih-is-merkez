@@ -22,7 +22,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addIncome, createExpense } from "@/app/actions/finance";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Plus, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 export function AddTransactionDialog({ children }: { children?: React.ReactNode }) {
     const [open, setOpen] = useState(false);
@@ -44,15 +44,17 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
 
         try {
             if (type === "expense") {
-                await createExpense(data);
+                const result = await createExpense(data);
+                if (!result.success) throw new Error(result.error || 'Gider kaydedilemedi');
                 toast.success("Gider kaydedildi");
             } else {
-                await addIncome(data);
+                const result = await addIncome(data);
+                if (!result.success) throw new Error(result.error || 'Gelir kaydedilemedi');
                 toast.success("Gelir kaydedildi");
             }
             setOpen(false);
             router.refresh();
-        } catch (error) {
+        } catch {
             toast.error("İşlem sırasında hata oluştu");
         } finally {
             setLoading(false);
@@ -74,7 +76,7 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
                     <DialogTitle className="text-xl font-bold">Yeni İşlem Ekle</DialogTitle>
                 </DialogHeader>
 
-                <Tabs defaultValue="expense" className="w-full" onValueChange={(v) => setType(v as any)}>
+                <Tabs defaultValue="expense" className="w-full" onValueChange={(v) => setType(v as "income" | "expense")}>
                     <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10 p-1 mb-6">
                         <TabsTrigger value="expense" className="gap-2 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
                             <ArrowDownRight className="h-4 w-4" />

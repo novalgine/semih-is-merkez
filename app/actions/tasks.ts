@@ -1,140 +1,95 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
-import { revalidatePath } from "next/cache"
-import { format } from "date-fns"
+import { revalidatePath } from 'next/cache'
 
-export interface Task {
-    id: string
-    content: string
-    is_completed: boolean
-    assigned_date: string | null // YYYY-MM-DD string or null
-    category: string | null
-    priority: 'low' | 'medium' | 'high'
-    description: string | null
-    position: number
-    created_at: string
+import {
+  editTask,
+  insertTask,
+  listTasks,
+  removeTask,
+  sortTasks,
+} from '@/lib/services/tasks-service'
+import type { ActionResponse } from '@/types/action-response'
+import type { ReorderTaskItem, Task, TaskPriority } from '@/types/tasks'
+
+export type { Task }
+
+export async function getTasks(startDate: Date, endDate: Date): Promise<Task[]> {
+  const result = await listTasks(startDate, endDate)
+  if (!result.success) {
+    console.error('Get Tasks Error:', result.error)
+    return []
+  }
+
+  return result.data || []
 }
 
-export async function getTasks(startDate: Date, endDate: Date) {
-    const supabase = await createClient()
+export async function createTask(
+  content: string,
+  assignedDate?: string | null,
+  category?: string | null,
+  priority: TaskPriority = 'medium',
+  description?: string,
+): Promise<ActionResponse<Task>> {
+  const result = await insertTask({ content, assignedDate, category, priority, description })
+  if (!result.success) {
+    console.error('Create Task Error:', result.error)
+    return result
+  }
 
-    const startStr = format(startDate, 'yyyy-MM-dd')
-    const endStr = format(endDate, 'yyyy-MM-dd')
-
-    // Backlog (Tarihsiz) ve Tarih Aralığındaki görevleri getir
-    const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .or(`assigned_date.is.null,and(assigned_date.gte.${startStr},assigned_date.lte.${endStr})`)
-        .order('position', { ascending: true })
-        .order('created_at', { ascending: false })
-
-    if (error) {
-        console.error('Get Tasks Error:', error)
-        return []
-    }
-
-    return data as Task[]
+  revalidatePath('/daily')
+  return result
 }
 
-export async function createTask(content: string, assignedDate?: string | null, category?: string | null, priority: 'low' | 'medium' | 'high' = 'medium', description?: string) {
-    const supabase = await createClient()
+export async function updateTask(
+  data: FormData | { id: string; updates: Partial<Task> },
+): Promise<ActionResponse<null>> {
+  let id: string
+  let updates: Record<string, unknown> = {}
 
-    const { data, error } = await supabase
-        .from('tasks')
-        .insert({
-            content,
-            assigned_date: assignedDate || null,
-            category: category || null,
-            priority: priority,
-            description: description || null,
-            is_completed: false
-        })
-        .select()
-        .single()
-
-    if (error) {
-        console.error('Create Task Error:', error)
-        return { success: false, error: error.message }
+  if (data instanceof FormData) {
+    id = data.get('id') as string
+    updates = {
+      content: data.get('content') as string,
+      category: data.get('category') as string,
+      assigned_date: data.get('assigned_date') as string,
+      is_completed: data.get('is_completed') === 'true',
     }
+  } else {
+    id = data.id
+    updates = data.updates as Record<string, unknown>
+  }
 
-    revalidatePath('/daily')
-    return { success: true, task: data }
+  const result = await editTask(id, updates)
+  if (!result.success) {
+    console.error('Update Task Error:', result.error)
+    return result
+  }
+
+  revalidatePath('/daily')
+  revalidatePath('/')
+  return result
 }
 
-export async function updateTask(data: FormData | { id: string, updates: Partial<Task> }) {
-    const supabase = await createClient()
+export async function deleteTask(id: string, path?: string): Promise<ActionResponse<null>> {
+  const result = await removeTask(id)
+  if (!result.success) {
+    console.error('Delete Task Error:', result.error)
+    return result
+  }
 
-    let id: string;
-    let updates: any = {};
-
-    if (data instanceof FormData) {
-        id = data.get('id') as string;
-        updates = {
-            content: data.get('content') as string,
-            category: data.get('category') as string,
-            assigned_date: data.get('assigned_date') as string,
-            is_completed: data.get('is_completed') === 'true'
-        };
-    } else {
-        id = data.id;
-        updates = data.updates;
-    }
-
-    // assigned_date string gelirse formatla, Date gelirse formatla
-    if (updates.assigned_date instanceof Date) {
-        updates.assigned_date = format(updates.assigned_date, 'yyyy-MM-dd')
-    }
-
-    const { error } = await supabase
-        .from('tasks')
-        .update(updates)
-        .eq('id', id)
-
-    if (error) {
-        console.error('Update Task Error:', error)
-        return { success: false, error: error.message }
-    }
-
-    revalidatePath('/daily')
-    revalidatePath('/') // Dashboard için
-    return { success: true }
+  revalidatePath('/daily')
+  if (path) revalidatePath(path)
+  return result
 }
 
-export async function deleteTask(id: string, path?: string) {
-    const supabase = await createClient()
+export async function reorderTasks(items: ReorderTaskItem[]): Promise<ActionResponse<null>> {
+  const result = await sortTasks(items)
+  if (!result.success) {
+    console.error('Reorder Tasks Error:', result.error)
+    return result
+  }
 
-    const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', id)
-
-    if (error) {
-        console.error('Delete Task Error:', error)
-        return { success: false, error: error.message }
-    }
-
-    revalidatePath('/daily')
-    if (path) revalidatePath(path)
-    return { success: true }
-}
-
-export async function reorderTasks(items: { id: string; position: number; assigned_date: string | null }[]) {
-    const supabase = await createClient()
-
-    const updates = items.map(item =>
-        supabase
-            .from('tasks')
-            .update({
-                position: item.position,
-                assigned_date: item.assigned_date
-            })
-            .eq('id', item.id)
-    )
-
-    await Promise.all(updates)
-
-    revalidatePath('/daily')
-    return { success: true }
+  revalidatePath('/daily')
+  return result
 }

@@ -1,254 +1,151 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server"
-import { revalidatePath } from "next/cache"
-import { format } from "date-fns"
-import { tr } from "date-fns/locale"
-import { z } from "zod"
+import { revalidatePath } from 'next/cache'
+import {
+  createExpenseRecord,
+  createExpenseTemplate,
+  createIncomeRecord,
+  createIncomeTemplate,
+  getFinancialOverview,
+  listExpenseTemplates,
+  listExpenses,
+  listIncomeTemplates,
+  listIncomes,
+  removeExpense,
+  removeTemplate,
+} from '@/lib/services/finance-service'
+import type { ActionResponse } from '@/types/action-response'
+import type {
+  CreateExpenseInput,
+  CreateExpenseTemplateInput,
+  CreateIncomeInput,
+  CreateIncomeTemplateInput,
+} from '@/types/finance'
 
-const expenseSchema = z.object({
-    description: z.string().min(2, "Açıklama en az 2 karakter olmalı"),
-    amount: z.coerce.number().min(0, "Tutar 0'dan küçük olamaz"),
-    category: z.string().min(1, "Kategori seçilmeli"),
-    date: z.string().refine((val) => !isNaN(Date.parse(val)), "Geçersiz tarih"),
-})
+export interface ExpenseFormValues {
+  description: string
+  amount: number
+  category: string
+  date: string
+}
 
-export type ExpenseFormValues = z.infer<typeof expenseSchema>
+export async function addExpense(data: ExpenseFormValues): Promise<ActionResponse<null>> {
+  const result = await createExpenseRecord({
+    description: data.description,
+    amount: data.amount,
+    category: data.category,
+    date: new Date(data.date).toISOString(),
+  })
 
-export async function addExpense(data: ExpenseFormValues) {
-    const supabase = await createClient()
+  if (!result.success) {
+    console.error('Add Expense Error:', result.error)
+    return result
+  }
 
-    const { error } = await supabase.from('expenses').insert({
-        description: data.description,
-        amount: data.amount,
-        category: data.category,
-        date: new Date(data.date).toISOString(),
-    })
-
-    if (error) {
-        console.error('Add Expense Error:', error)
-        return { success: false, error: error.message }
-    }
-
-    revalidatePath('/finance/expenses')
-    revalidatePath('/') // Dashboard'u da güncelle (Net Kar için)
-    return { success: true }
+  revalidatePath('/finance/expenses')
+  revalidatePath('/')
+  return result
 }
 
 export async function getExpenses() {
-    const supabase = await createClient()
+  const result = await listExpenses()
+  if (!result.success) {
+    console.error('Get Expenses Error:', result.error)
+    return []
+  }
 
-    const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .order('date', { ascending: false })
-
-    if (error) {
-        console.error('Get Expenses Error:', error)
-        return []
-    }
-
-    return data
+  return result.data || []
 }
 
-export async function deleteExpense(id: string) {
-    const supabase = await createClient()
+export async function deleteExpense(id: string): Promise<ActionResponse<null>> {
+  const result = await removeExpense(id)
+  if (!result.success) {
+    console.error('Delete Expense Error:', result.error)
+    return result
+  }
 
-    const { error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', id)
-
-    if (error) {
-        console.error('Delete Expense Error:', error)
-        return { success: false, error: error.message }
-    }
-
-    revalidatePath('/finance/expenses')
-    revalidatePath('/')
-    return { success: true }
+  revalidatePath('/finance/expenses')
+  revalidatePath('/')
+  return result
 }
 
-export async function createExpense(data: {
-    amount: number;
-    category: string;
-    description: string | null;
-    date: string;
-}) {
-    const supabase = await createClient();
+export async function createExpense(data: CreateExpenseInput): Promise<ActionResponse<null>> {
+  const result = await createExpenseRecord(data)
+  if (!result.success) {
+    console.error('Create Expense Error:', result.error)
+    return result
+  }
 
-    const { error } = await supabase
-        .from('expenses')
-        .insert({
-            amount: data.amount,
-            category: data.category,
-            description: data.description,
-            date: data.date,
-            created_at: new Date().toISOString(),
-        });
-
-    if (error) {
-        console.error("Error creating expense:", error);
-        throw new Error("Gider eklenemedi");
-    }
-
-    revalidatePath('/finance');
-    return { success: true };
+  revalidatePath('/finance')
+  return result
 }
 
-// --- INCOME ACTIONS ---
+export async function addIncome(data: CreateIncomeInput): Promise<ActionResponse<null>> {
+  const result = await createIncomeRecord(data)
+  if (!result.success) {
+    console.error('Add Income Error:', result.error)
+    return result
+  }
 
-export async function addIncome(data: {
-    amount: number;
-    category: string;
-    description: string;
-    date: string;
-    customer_name?: string;
-    customer_id?: string;
-}) {
-    const supabase = await createClient()
-
-    const { error } = await supabase.from('incomes').insert({
-        amount: data.amount,
-        category: data.category,
-        description: data.description,
-        date: data.date,
-        customer_id: data.customer_id || null,
-        source: 'manual'
-    })
-
-    if (error) {
-        console.error('Add Income Error:', error)
-        return { success: false, error: error.message }
-    }
-
-    revalidatePath('/finance')
-    revalidatePath('/')
-    return { success: true }
+  revalidatePath('/finance')
+  revalidatePath('/')
+  return result
 }
 
 export async function getIncomes() {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-        .from('incomes')
-        .select(`
-            *,
-            customers (
-                name
-            )
-        `)
-        .order('date', { ascending: false })
+  const result = await listIncomes()
+  if (!result.success) {
+    console.error('Get Incomes Error:', result.error)
+    return []
+  }
 
-    if (error) {
-        console.error('Get Incomes Error:', error)
-        return []
-    }
-    return data
+  return result.data || []
 }
 
-// --- ANALYTICS ---
-
-export async function getFinancialBigPicture(months: number = 6) {
-    const supabase = await createClient()
-
-    const now = new Date()
-    const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
-
-    // Fetch all relevant data
-    const { data: expenses } = await supabase
-        .from('expenses')
-        .select('amount, date')
-        .eq('status', 'confirmed')
-        .gte('date', startDate.toISOString().split('T')[0])
-
-    const { data: manualIncomes } = await supabase
-        .from('incomes')
-        .select('amount, date')
-        .gte('date', startDate.toISOString().split('T')[0])
-
-    const { data: proposals } = await supabase
-        .from('proposals')
-        .select('total_amount, created_at')
-        .eq('payment_status', 'Paid')
-        .gte('created_at', startDate.toISOString())
-
-    // Generate monthly bins
-    const bins: Record<string, { income: number, expense: number, label: string }> = {}
-
-    for (let i = 0; i < months; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const key = format(d, 'yyyy-MM')
-        bins[key] = {
-            income: 0,
-            expense: 0,
-            label: format(d, 'MMM', { locale: tr })
-        }
-    }
-
-    // Fill bins
-    expenses?.forEach(e => {
-        const key = e.date.substring(0, 7)
-        if (bins[key]) bins[key].expense += Number(e.amount)
-    })
-
-    manualIncomes?.forEach(i => {
-        const key = i.date.substring(0, 7)
-        if (bins[key]) bins[key].income += Number(i.amount)
-    })
-
-    proposals?.forEach(p => {
-        const key = p.created_at.substring(0, 7)
-        if (bins[key]) bins[key].income += Number(p.total_amount)
-    })
-
-    return Object.values(bins).reverse()
+export async function getFinancialBigPicture(months = 6) {
+  return getFinancialOverview(months)
 }
-
-
-// --- TEMPLATE ACTIONS ---
 
 export async function getExpenseTemplates() {
-    const supabase = await createClient()
-    const { data } = await supabase.from('expense_templates').select('*').order('name')
-    return data || []
+  const result = await listExpenseTemplates()
+  if (!result.success) {
+    console.error('Get Expense Templates Error:', result.error)
+    return []
+  }
+
+  return result.data || []
 }
 
 export async function getIncomeTemplates() {
-    const supabase = await createClient()
-    const { data } = await supabase
-        .from('income_templates')
-        .select(`
-            *,
-            customers (
-                name
-            )
-        `)
-        .order('name')
-    return data || []
+  const result = await listIncomeTemplates()
+  if (!result.success) {
+    console.error('Get Income Templates Error:', result.error)
+    return []
+  }
+
+  return result.data || []
 }
 
-export async function addExpenseTemplate(data: { name: string, default_amount: number, category: string, is_mandatory: boolean }) {
-    const supabase = await createClient()
-    const { error } = await supabase.from('expense_templates').insert(data)
-    if (error) return { success: false, error: error.message }
-    revalidatePath('/finance')
-    return { success: true }
+export async function addExpenseTemplate(data: CreateExpenseTemplateInput): Promise<ActionResponse<null>> {
+  const result = await createExpenseTemplate(data)
+  if (!result.success) return result
+
+  revalidatePath('/finance')
+  return result
 }
 
-export async function addIncomeTemplate(data: { name: string, default_amount: number, category: string, customer_id?: string }) {
-    const supabase = await createClient()
-    const { error } = await supabase.from('income_templates').insert(data)
-    if (error) return { success: false, error: error.message }
-    revalidatePath('/finance')
-    return { success: true }
+export async function addIncomeTemplate(data: CreateIncomeTemplateInput): Promise<ActionResponse<null>> {
+  const result = await createIncomeTemplate(data)
+  if (!result.success) return result
+
+  revalidatePath('/finance')
+  return result
 }
 
-export async function deleteTemplate(type: 'income' | 'expense', id: string) {
-    const supabase = await createClient()
-    const table = type === 'income' ? 'income_templates' : 'expense_templates'
-    await supabase.from(table).delete().eq('id', id)
-    revalidatePath('/finance')
-    return { success: true }
+export async function deleteTemplate(type: 'income' | 'expense', id: string): Promise<ActionResponse<null>> {
+  const result = await removeTemplate(type, id)
+  if (!result.success) return result
+
+  revalidatePath('/finance')
+  return result
 }
-
-
