@@ -146,7 +146,7 @@ export function WeeklyBoard({ initialTasks, currentDate }: WeeklyBoardProps) {
 
                 // Server Update
                 try {
-                    await updateTask({ id: activeId, updates: { assigned_date: newDate, position: 9999 } })
+                    await updateTask({ id: activeId, updates: { assigned_date: newDate, position: 9999 }, currentAssignedDate: activeTask.assigned_date })
                 } catch (error) {
                     setTasks(tasks) // Revert
                     toast({ title: "Hata", description: "Taşıma başarısız.", variant: "destructive" })
@@ -196,7 +196,7 @@ export function WeeklyBoard({ initialTasks, currentDate }: WeeklyBoardProps) {
                     setTasks(updatedTasks)
 
                     try {
-                        await updateTask({ id: activeId, updates: { assigned_date: newDate } })
+                        await updateTask({ id: activeId, updates: { assigned_date: newDate }, currentAssignedDate: activeTask.assigned_date })
                     } catch (error) {
                         setTasks(tasks)
                         toast({ title: "Hata", description: "Taşıma başarısız.", variant: "destructive" })

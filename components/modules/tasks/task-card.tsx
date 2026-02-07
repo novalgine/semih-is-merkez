@@ -43,7 +43,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
     const handleToggle = async (checked: boolean) => {
         setIsCompleted(checked)
         try {
-            await updateTask({ id: task.id, updates: { is_completed: checked } })
+            await updateTask({ id: task.id, updates: { is_completed: checked }, currentAssignedDate: task.assigned_date })
         } catch (error) {
             setIsCompleted(!checked) // Revert on error
             toast({ title: "Hata", description: "Güncellenemedi", variant: "destructive" })
