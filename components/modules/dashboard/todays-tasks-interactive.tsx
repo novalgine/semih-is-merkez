@@ -42,7 +42,8 @@ export function TodaysTasksInteractive({ initialTasks }: TodaysTasksInteractiveP
         try {
             await updateTask({
                 id: task.id,
-                updates: { is_completed: newCompleted }
+                updates: { is_completed: newCompleted },
+                currentAssignedDate: task.assigned_date
             });
         } catch (error) {
             // Revert on error

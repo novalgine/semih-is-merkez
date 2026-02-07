@@ -85,23 +85,23 @@ export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: Edit
     const onSubmit = async (values: TaskSchemaCheck) => {
         setIsLoading(true);
         try {
-            const formData = new FormData();
-            formData.append('id', task.id);
-            formData.append('content', values.content);
-            if (values.category) formData.append('category', values.category);
-            if (values.assigned_date) formData.append('assigned_date', values.assigned_date);
-
-            // Keep existing completion status
-            formData.append('is_completed', String(task.is_completed));
-
-            const result = await updateTask(formData);
+            const result = await updateTask({
+                id: task.id,
+                currentAssignedDate: task.assigned_date ?? null,
+                updates: {
+                    content: values.content,
+                    category: values.category ?? null,
+                    assigned_date: values.assigned_date ?? null,
+                    is_completed: task.is_completed
+                }
+            });
 
             if (result.success) {
                 toast({ title: 'Başarılı', description: 'Görev güncellendi' });
                 onOpenChange(false);
                 if (onTaskUpdated) onTaskUpdated();
             } else {
-                toast({ title: 'Hata', description: 'Güncelleme başarısız: ' + (result as any).error, variant: 'destructive' });
+                toast({ title: 'Hata', description: 'Güncelleme başarısız: ' + result.error, variant: 'destructive' });
             }
         } catch (error) {
             toast({ title: 'Hata', description: 'Bir hata oluştu', variant: 'destructive' });
@@ -116,7 +116,7 @@ export function EditTaskDialog({ open, onOpenChange, task, onTaskUpdated }: Edit
 
         setIsDeleting(true);
         try {
-            const result = await deleteTask(task.id, '/');
+            const result = await deleteTask(task.id, task.assigned_date ?? null);
             if (result.success) {
                 toast({ title: 'Silindi', description: 'Görev silindi' });
                 onOpenChange(false);

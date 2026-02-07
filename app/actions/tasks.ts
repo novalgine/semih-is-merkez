@@ -4,6 +4,37 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { format } from "date-fns"
 
+function getTodayString() {
+    return format(new Date(), 'yyyy-MM-dd')
+}
+
+function shouldRevalidateDashboard(assignedDate: string | null | undefined) {
+    return assignedDate === getTodayString()
+}
+
+function normalizeAssignedDate(value: Task['assigned_date'] | Date | undefined) {
+    if (value instanceof Date) {
+        return format(value, 'yyyy-MM-dd')
+    }
+
+    return value
+}
+
+async function getTaskAssignedDate(id: string) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('tasks')
+        .select('assigned_date')
+        .eq('id', id)
+        .single()
+
+    if (error) {
+        return { error: error.message, assignedDate: null as string | null }
+    }
+
+    return { error: null, assignedDate: data.assigned_date as string | null }
+}
+
 export interface Task {
     id: string
     content: string
@@ -60,31 +91,56 @@ export async function createTask(content: string, assignedDate?: string | null, 
     }
 
     revalidatePath('/daily')
+
+    if (shouldRevalidateDashboard(data.assigned_date)) {
+        revalidatePath('/')
+    }
+
     return { success: true, task: data }
 }
 
-export async function updateTask(data: FormData | { id: string, updates: Partial<Task> }) {
-    const supabase = await createClient()
-
-    let id: string;
-    let updates: any = {};
-
-    if (data instanceof FormData) {
-        id = data.get('id') as string;
-        updates = {
-            content: data.get('content') as string,
-            category: data.get('category') as string,
-            assigned_date: data.get('assigned_date') as string,
-            is_completed: data.get('is_completed') === 'true'
-        };
-    } else {
-        id = data.id;
-        updates = data.updates;
+type UpdateTaskInput =
+    | FormData
+    | {
+        id: string
+        updates: Partial<Task>
+        currentAssignedDate?: string | null
     }
 
-    // assigned_date string gelirse formatla, Date gelirse formatla
-    if (updates.assigned_date instanceof Date) {
-        updates.assigned_date = format(updates.assigned_date, 'yyyy-MM-dd')
+export async function updateTask(input: UpdateTaskInput) {
+    const supabase = await createClient()
+
+    let id: string
+    let updates: Partial<Task> = {}
+    let currentAssignedDate: string | null | undefined
+
+    if (input instanceof FormData) {
+        id = input.get('id') as string
+        updates = {
+            content: input.get('content') as string,
+            category: input.get('category') as string,
+            assigned_date: input.get('assigned_date') as string,
+            is_completed: input.get('is_completed') === 'true'
+        }
+    } else {
+        id = input.id
+        updates = input.updates
+        currentAssignedDate = input.currentAssignedDate
+    }
+
+    updates.assigned_date = normalizeAssignedDate(updates.assigned_date)
+
+    const newAssignedDate = updates.assigned_date
+
+    if (typeof currentAssignedDate === 'undefined') {
+        // Eski atama tarihi çağıran tarafta bilinmiyorsa sadece bu durumda DB'den oku
+        const existing = await getTaskAssignedDate(id)
+        if (existing.error) {
+            console.error('Update Task (Fetch Existing) Error:', existing.error)
+            return { success: false, error: existing.error }
+        }
+
+        currentAssignedDate = existing.assignedDate
     }
 
     const { error } = await supabase
@@ -98,12 +154,28 @@ export async function updateTask(data: FormData | { id: string, updates: Partial
     }
 
     revalidatePath('/daily')
-    revalidatePath('/') // Dashboard için
+
+    if (shouldRevalidateDashboard(currentAssignedDate) || shouldRevalidateDashboard(newAssignedDate ?? currentAssignedDate)) {
+        revalidatePath('/')
+    }
+
     return { success: true }
 }
 
-export async function deleteTask(id: string, path?: string) {
+export async function deleteTask(id: string, assignedDate?: string | null) {
     const supabase = await createClient()
+
+    let currentAssignedDate = assignedDate
+
+    if (typeof currentAssignedDate === 'undefined') {
+        const existing = await getTaskAssignedDate(id)
+        if (existing.error) {
+            console.error('Delete Task (Fetch Existing) Error:', existing.error)
+            return { success: false, error: existing.error }
+        }
+
+        currentAssignedDate = existing.assignedDate
+    }
 
     const { error } = await supabase
         .from('tasks')
@@ -116,7 +188,11 @@ export async function deleteTask(id: string, path?: string) {
     }
 
     revalidatePath('/daily')
-    if (path) revalidatePath(path)
+
+    if (shouldRevalidateDashboard(currentAssignedDate)) {
+        revalidatePath('/')
+    }
+
     return { success: true }
 }
 
@@ -136,5 +212,10 @@ export async function reorderTasks(items: { id: string; position: number; assign
     await Promise.all(updates)
 
     revalidatePath('/daily')
+
+    if (items.some(item => shouldRevalidateDashboard(item.assigned_date))) {
+        revalidatePath('/')
+    }
+
     return { success: true }
 }
