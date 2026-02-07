@@ -15,6 +15,19 @@ const MOTIVATIONS = [
     "Odaklan ve listeyi erit!",
 ];
 
+
+type CustomerSummary = {
+    name: string
+}
+
+function getCustomerName(customers: CustomerSummary | CustomerSummary[] | null): string | undefined {
+    if (!customers) {
+        return undefined;
+    }
+
+    return Array.isArray(customers) ? customers[0]?.name : customers.name;
+}
+
 export async function generateDashboardSummary(): Promise<SummaryPoint[]> {
     const supabase = await createClient();
     const points: SummaryPoint[] = [];
@@ -85,8 +98,7 @@ export async function generateDashboardSummary(): Promise<SummaryPoint[]> {
 
     if (activeProposals && activeProposals.length > 0 && (activeProposals[0].total_amount || 0) > 20000) {
         const topProp = activeProposals[0];
-        // @ts-ignore
-        const customerName = Array.isArray(topProp.customers) ? topProp.customers[0]?.name : topProp.customers?.name;
+        const customerName = getCustomerName(topProp.customers as CustomerSummary | CustomerSummary[] | null);
 
         points.push({
             id: 2,

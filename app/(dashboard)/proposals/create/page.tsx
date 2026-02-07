@@ -46,17 +46,58 @@ const proposalSchema = z.object({
 
 type ProposalFormValues = z.infer<typeof proposalSchema>
 
+type CustomerOption = {
+    id: string
+    name: string
+    company: string | null
+}
+
+type BundleService = {
+    name: string
+    price: number | null
+}
+
+type BundleItem = {
+    quantity: number
+    services: BundleService | null
+}
+
+type BundleOption = {
+    id: string
+    name: string
+    bundle_items?: BundleItem[] | null
+}
+
+type PreviewItem = {
+    description: string
+    quantity: number
+    unitPrice: number
+    total: number
+}
+
+type PreviewData = {
+    customerName: string
+    companyName: string
+    projectTitle: string
+    date: string
+    validUntil: string
+    items: PreviewItem[]
+    subtotal: number
+    tax: number
+    total: number
+}
+
 export default function CreateProposalPage() {
-    const [customers, setCustomers] = useState<any[]>([])
+    const [customers, setCustomers] = useState<CustomerOption[]>([])
     const [services, setServices] = useState<Service[]>([])
-    const [bundles, setBundles] = useState<any[]>([])
+    const [bundles, setBundles] = useState<BundleOption[]>([])
     const [aiLoading, setAiLoading] = useState(false)
     const [tone, setTone] = useState<'corporate' | 'creative' | 'friendly'>('corporate')
     const [saving, setSaving] = useState(false)
-    const [previewData, setPreviewData] = useState<any>(null)
+    const [previewData, setPreviewData] = useState<PreviewData | null>(null)
 
     const form = useForm<ProposalFormValues>({
-        resolver: zodResolver(proposalSchema) as any, // Temporary fix for Zod inference issue
+        resolver: zodResolver(proposalSchema),
         defaultValues: {
             customerId: "",
             projectTitle: "",
@@ -93,14 +134,14 @@ export default function CreateProposalPage() {
             const timer = setTimeout(() => {
                 const selectedCustomer = customers.find(c => c.id === value.customerId)
 
-                const items = value.items?.map((item: any) => ({
+                const items: PreviewItem[] = value.items?.map((item) => ({
                     description: item.description || "",
                     quantity: Number(item.quantity) || 0,
                     unitPrice: Number(item.unitPrice) || 0,
                     total: (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
                 })) || []
 
-                const subtotal = items.reduce((sum: number, item: any) => sum + item.total, 0)
+                const subtotal = items.reduce((sum, item) => sum + item.total, 0)
                 const tax = subtotal * 0.20
                 const total = subtotal + tax
 
@@ -243,7 +284,7 @@ export default function CreateProposalPage() {
                                 <div className="flex items-center justify-between pt-4">
                                     <h3 className="text-sm font-medium">Hizmet Kalemleri</h3>
                                     <div className="flex gap-2">
-                                        <Select value={tone} onValueChange={(v: any) => setTone(v)}>
+                                        <Select value={tone} onValueChange={(v: 'corporate' | 'creative' | 'friendly') => setTone(v)}>
                                             <SelectTrigger className="w-[110px] h-8 text-xs">
                                                 <SelectValue placeholder="Ton" />
                                             </SelectTrigger>
@@ -257,7 +298,7 @@ export default function CreateProposalPage() {
                                         <Select onValueChange={(value) => {
                                             const bundle = bundles.find(b => b.id === value)
                                             if (bundle && bundle.bundle_items) {
-                                                const newItems = bundle.bundle_items.map((item: any) => ({
+                                                const newItems = bundle.bundle_items.map((item) => ({
                                                     description: item.services?.name || "Hizmet",
                                                     quantity: item.quantity,
                                                     unitPrice: item.services?.price || 0
@@ -430,7 +471,7 @@ export default function CreateProposalPage() {
 
                             <div className="space-y-2">
                                 <h4 className="font-semibold">Hizmet Kalemleri</h4>
-                                {previewData.items.map((item: any, idx: number) => (
+                                {previewData.items.map((item, idx) => (
                                     <div key={idx} className="flex justify-between text-sm border-b pb-2">
                                         <span>{item.description}</span>
                                         <span className="font-medium">{item.total.toLocaleString('tr-TR')} TL</span>

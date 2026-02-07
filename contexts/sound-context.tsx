@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, ReactNode, useState, useEffect } from 'react';
+import { createContext, useContext, useCallback, ReactNode } from 'react';
 import useSound from 'use-sound';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
@@ -18,24 +18,19 @@ const TEST_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2568/2568-pr
 
 export function SoundProvider({ children }: { children: ReactNode }) {
     const [isMuted, setIsMuted] = useLocalStorage('fennix-sound-muted', false);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     // Always call useSound unconditionally to avoid hook count mismatch
     const [play] = useSound(TEST_SOUND_URL, {
         volume: 0.12,
         interrupt: true,
         onload: () => console.log("Sound loaded successfully!"),
-        onloaderror: (id: any, err: any) => console.error("Sound load error:", err),
+        onloaderror: (_id: unknown, err: unknown) => console.error("Sound load error:", err),
     });
 
     const playSound = useCallback(
         (soundId: string) => {
             // Check conditions before playing, not in hook options
-            if (!mounted || isMuted) return;
+            if (isMuted) return;
 
             console.log(`Attempting to play sound: ${soundId}`);
 
@@ -45,7 +40,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
                 console.error('Sound playback failed:', error);
             }
         },
-        [isMuted, play, mounted]
+        [isMuted, play]
     );
 
     const toggleMute = useCallback(() => {
