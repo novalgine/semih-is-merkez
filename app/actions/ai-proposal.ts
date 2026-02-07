@@ -1,6 +1,21 @@
 'use server'
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { z } from "zod";
+
+const proposalItemSchema = z.object({
+    description: z.string().min(1),
+    quantity: z.number().int().positive(),
+    unitPrice: z.number().nonnegative(),
+});
+
+const proposalItemsSchema = z.array(proposalItemSchema).min(1).max(10);
+
+export function parseProposalItemsResponse(rawText: string) {
+    const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanedText);
+    return proposalItemsSchema.parse(parsed);
+}
 
 export async function generateProposalItems(projectTitle: string, tone: 'corporate' | 'creative' | 'friendly' = 'corporate') {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -41,10 +56,7 @@ export async function generateProposalItems(projectTitle: string, tone: 'corpora
         const response = result.response;
         let text = response.text();
 
-        // Temizlik (Markdown ```json ... ``` bloklarını kaldır)
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-        const items = JSON.parse(text);
+        const items = parseProposalItemsResponse(text);
         return { success: true, items };
     } catch (error: any) {
         console.error("AI Proposal Error:", error);
