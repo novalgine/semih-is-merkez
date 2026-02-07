@@ -11,6 +11,14 @@ import { Separator } from "@/components/ui/separator"
 import { getProposal } from "@/app/actions/proposals"
 import { ProposalActions } from "@/components/modules/proposals/proposal-actions"
 
+
+type ProposalItem = {
+    id: string
+    description: string
+    quantity: number
+    unit_price: number
+}
+
 export default async function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const proposal = await getProposal(id)
@@ -20,7 +28,7 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
     }
 
     // Calculate precise totals
-    const subtotal = proposal.proposal_items.reduce((sum: any, item: any) => sum + (item.quantity * item.unit_price), 0)
+    const subtotal = proposal.proposal_items.reduce((sum: number, item: ProposalItem) => sum + (item.quantity * item.unit_price), 0)
     const tax = subtotal * (proposal.tax_rate / 100)
     const total = subtotal + tax
 
@@ -71,7 +79,7 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
                                         </tr>
                                     </thead>
                                     <tbody className="[&_tr:last-child]:border-0">
-                                        {proposal.proposal_items.map((item: any) => (
+                                        {proposal.proposal_items.map((item: ProposalItem) => (
                                             <tr key={item.id} className="border-b transition-colors hover:bg-muted/50">
                                                 <td className="p-4 align-middle">{item.description}</td>
                                                 <td className="p-4 align-middle text-right">{item.quantity}</td>

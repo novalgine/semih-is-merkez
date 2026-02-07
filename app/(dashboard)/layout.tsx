@@ -5,17 +5,12 @@ import {
     FileText,
     Video,
     BookOpen,
-    Menu,
-    Search,
     Settings,
-    CircleUser,
     Package,
     Wallet,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { Header } from "@/components/layout/header"
