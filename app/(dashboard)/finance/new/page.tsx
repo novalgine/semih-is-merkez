@@ -21,16 +21,18 @@ export default function NewExpensePage() {
         const formData = new FormData(e.currentTarget);
 
         try {
-            await createExpense({
+            const result = await createExpense({
                 amount: parseFloat(formData.get("amount") as string),
                 category: formData.get("category") as string,
                 description: formData.get("description") as string,
                 date: formData.get("date") as string,
             });
 
+            if (!result.success) throw new Error(result.error || 'İşlem eklenemedi');
+
             toast.success("İşlem başarıyla eklendi");
             router.push("/finance");
-        } catch (error) {
+        } catch {
             toast.error("Hata oluştu");
             setLoading(false);
         }

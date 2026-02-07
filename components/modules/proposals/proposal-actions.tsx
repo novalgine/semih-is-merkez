@@ -34,7 +34,7 @@ export function ProposalActions({ id, status }: ProposalActionsProps) {
             const result = await duplicateProposal(id)
             if (result.success) {
                 toast({ title: "Başarılı", description: "Teklif kopyalandı." })
-                router.push(`/proposals/${result.id}`)
+                if (result.data?.id) router.push(`/proposals/${result.data.id}`)
             } else {
                 toast({ title: "Hata", description: result.error || "Bir hata oluştu.", variant: "destructive" })
             }
@@ -52,7 +52,7 @@ export function ProposalActions({ id, status }: ProposalActionsProps) {
             const result = await convertProposalToShoot(id)
             if (result.success) {
                 toast({ title: "Başarılı", description: "Çekim oluşturuldu." })
-                router.push(`/shoots/${result.id}`)
+                if (result.data?.id) router.push(`/shoots/${result.data.id}`)
             } else {
                 toast({ title: "Hata", description: result.error || "Bir hata oluştu.", variant: "destructive" })
             }
