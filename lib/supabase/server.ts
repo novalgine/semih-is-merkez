@@ -1,13 +1,21 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { getSupabaseEnvStatus } from '@/lib/env'
 
-export async function createClient() {
+export async function createClientSafe() {
+    const envStatus = getSupabaseEnvStatus()
+
+    if (!envStatus.isConfigured || !envStatus.url || !envStatus.anonKey) {
+        return {
+            client: null,
+            envStatus,
+        }
+    }
+
     const cookieStore = await cookies()
 
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
+    return {
+        client: createServerClient(envStatus.url, envStatus.anonKey, {
             cookies: {
                 getAll() {
                     return cookieStore.getAll()
@@ -24,6 +32,17 @@ export async function createClient() {
                     }
                 },
             },
-        }
-    )
+        }),
+        envStatus,
+    }
+}
+
+export async function createClient() {
+    const { client, envStatus } = await createClientSafe()
+
+    if (!client) {
+        throw new Error(envStatus.message || 'Supabase env is missing')
+    }
+
+    return client
 }
